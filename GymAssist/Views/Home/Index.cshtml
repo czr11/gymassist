@@ -1,0 +1,81 @@
+﻿@model GymAssist.Models.CheckInViewModel
+@{
+    ViewData["Title"] = "Check-in Self Service";
+}
+
+<div class="hero-shell">
+    <div class="top-toolbar">
+        <div class="top-toolbar__actions">
+            <div class="gym-selector compact">
+                <label asp-for="GymName" class="form-label"></label>
+                <select asp-for="GymName" class="form-select form-select-sm">
+                    <option value="Alphamma.sv">Alphamma.sv</option>
+                </select>
+                <span asp-validation-for="GymName" class="text-danger"></span>
+            </div>
+            <a asp-controller="Admin" asp-action="Login" class="admin-link">Admin</a>
+        </div>
+    </div>
+
+    <section class="hero-card">
+        <div class="hero-copy">
+            <span class="hero-badge">Self-service • Acceso rápido</span>
+            <h1>Check-in</h1>
+            <p>Registra tu ingreso en segundos con tu correo, ID o teléfono y consulta el estado de tu membresía al instante.</p>
+
+            <div class="hero-actions">
+                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#checkinModal">
+                    Iniciar check-in
+                </button>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+<div class="modal fade" id="checkinModal" tabindex="-1" aria-labelledby="checkinModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-modal modal-hero">
+            <div class="modal-body p-0">
+                <div class="modal-hero__content">
+                    <div class="modal-hero__copy">
+                        <span class="hero-badge">Check-in self-service</span>
+                        <h2 id="checkinModalLabel">Tu entrada, más rápida</h2>
+                        <p>Completa solo un dato y descubre si tu membresía está al día, próxima a vencer o con pago atrasado.</p>
+                    </div>
+                    <div class="modal-hero__form">
+                        <form asp-action="CheckIn" method="post" class="checkin-form">
+                                <div class="mb-4">
+                                <label asp-for="Identificador" class="form-label"></label>
+                                <input asp-for="Identificador" class="form-control" placeholder="Correo, ID o teléfono" />
+                                <span asp-validation-for="Identificador" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Confirmar check-in</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["CheckInMessage"] != null)
+{
+    <div class="modal fade show" id="resultModal" tabindex="-1" aria-modal="true" role="dialog" style="display:block; background: rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-modal modal-result">
+                <div class="modal-body text-center p-4">
+                    <h3 class="mb-2">@TempData["CheckInTitle"]</h3>
+                    <p class="mb-3">@TempData["CheckInMessage"]</p>
+                    <div class="result-pill">@TempData["CheckInStatus"]</div>
+                    <p class="small mt-3 mb-0">@TempData["CheckInDetail"]</p>
+                    <button type="button" class="btn btn-primary mt-4" onclick="document.getElementById('resultModal').remove();">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

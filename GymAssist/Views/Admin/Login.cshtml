@@ -1,0 +1,39 @@
+@model GymAssist.Models.AdminLoginViewModel
+@{
+    ViewData["Title"] = "Administración";
+}
+
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card__header">
+            <span class="auth-badge">Panel de administración</span>
+            <h1>Accede a la consola</h1>
+            <p>Este formulario estará conectado a la lógica de autenticación en una siguiente etapa.</p>
+        </div>
+
+        <form asp-action="Login" method="post" class="auth-form">
+            <div class="mb-3">
+                <label asp-for="Usuario" class="form-label"></label>
+                <input asp-for="Usuario" class="form-control form-control-lg" placeholder="usuario@alphamma.sv" />
+                <span asp-validation-for="Usuario" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control form-control-lg" placeholder="••••••••" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">Entrar</button>
+        </form>
+
+        @if (TempData["AdminNotice"] != null)
+        {
+            <div class="alert alert-info mt-4 mb-0">
+                @TempData["AdminNotice"]
+            </div>
+        }
+
+        <a asp-controller="Home" asp-action="Index" class="back-link">Volver al check-in</a>
+    </div>
+</div>
