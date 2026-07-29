@@ -1,4 +1,12 @@
+using System.IO;
+using Microsoft.AspNetCore.DataProtection;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Persist data protection keys so antiforgery tokens survive restarts.
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys")))
+    .SetApplicationName("GymAssist");
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
