@@ -1,11 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copiar sólo el proyecto y sus dependencias primero para aprovechar el cache de Docker.
 COPY GymAssist/GymAssist.csproj ./GymAssist/
 RUN dotnet restore "./GymAssist/GymAssist.csproj"
 
-# Copiar el resto del proyecto.
 COPY GymAssist/. ./GymAssist/
 RUN dotnet publish "./GymAssist/GymAssist.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
