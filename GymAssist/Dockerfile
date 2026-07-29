@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY ["GymAssist.csproj", "./"]
-RUN dotnet restore "./GymAssist.csproj"
+RUN dotnet restore "./GymAssist/GymAssist.csproj"
 
 COPY . .
 RUN dotnet publish "GymAssist.csproj" -c Release -o /app/publish /p:UseAppHost=false
