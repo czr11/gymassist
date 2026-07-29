@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Check-in Self Service - GymAssist</title>
+    
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css?v=HKL1mn6S4my_3oJHnFPC7tRkGnRPWpXEb4fJp5OSIB8" />
+    <link rel="stylesheet" href="/GymAssist.styles.css" />
+</head>
+<body>
+    <header b-2lcdyzdxtf>
+        <nav b-2lcdyzdxtf class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div b-2lcdyzdxtf class="container-fluid">
+                <a class="navbar-brand" href="/">GymAssist</a>
+                <button b-2lcdyzdxtf class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span b-2lcdyzdxtf class="navbar-toggler-icon"></span>
+                </button>
+                <div b-2lcdyzdxtf class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul b-2lcdyzdxtf class="navbar-nav flex-grow-1">
+                        <li b-2lcdyzdxtf class="nav-item">
+                            <a class="nav-link text-dark" href="/">Home</a>
+                        </li>
+                        <li b-2lcdyzdxtf class="nav-item">
+                            <a class="nav-link text-dark" href="/Home/Privacy">Privacy</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div b-2lcdyzdxtf class="container">
+        <main b-2lcdyzdxtf role="main" class="pb-3">
+            
+<div class="hero-shell">
+    <div class="top-toolbar">
+        <div class="top-toolbar__actions">
+            <div class="gym-selector compact">
+                <label class="form-label" for="GymName">Gimnasio</label>
+                <select class="form-select form-select-sm" data-val="true" data-val-required="Selecciona un gimnasio." id="GymName" name="GymName">
+                    <option value="Alphamma.sv" selected="selected">Alphamma.sv</option>
+                </select>
+                <span class="text-danger field-validation-valid" data-valmsg-for="GymName" data-valmsg-replace="true"></span>
+            </div>
+            <a class="admin-link" href="/Admin/Login">Admin</a>
+        </div>
+    </div>
+
+    <section class="hero-card">
+        <div class="hero-copy">
+            <span class="hero-badge">Self-service • Acceso rápido</span>
+            <h1>Check-in</h1>
+            <p>Registra tu ingreso en segundos con tu correo, ID o teléfono y consulta el estado de tu membresía al instante.</p>
+
+            <div class="hero-actions">
+                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#checkinModal">
+                    Iniciar check-in
+                </button>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+<div class="modal fade" id="checkinModal" tabindex="-1" aria-labelledby="checkinModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-modal modal-hero">
+            <div class="modal-body p-0">
+                <div class="modal-hero__content">
+                    <div class="modal-hero__copy">
+                        <span class="hero-badge">Check-in self-service</span>
+                        <h2 id="checkinModalLabel">Tu entrada, más rápida</h2>
+                        <p>Completa solo un dato y descubre si tu membresía está al día, próxima a vencer o con pago atrasado.</p>
+                    </div>
+                    <div class="modal-hero__form">
+                        <form method="post" class="checkin-form" action="/Home/CheckIn">
+                                <div class="mb-4">
+                                <label class="form-label" for="Identificador">Correo, ID o tel&#xE9;fono</label>
+                                <input class="form-control" placeholder="Correo, ID o teléfono" type="text" data-val="true" data-val-required="Ingresa tu correo, ID o tel&#xE9;fono." id="Identificador" name="Identificador" value="" />
+                                <span class="text-danger field-validation-valid" data-valmsg-for="Identificador" data-valmsg-replace="true"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Confirmar check-in</button>
+                            </div>
+                        <input name="__RequestVerificationToken" type="hidden" value="CfDJ8OfFpbRoZdpBtwtoRlUp7iGVmD1pe1zZqWnkqMZV-UMuinPTeMuJTqfq33wYK44qdb4OrOnMLzQNfGaT4ZF5orNbEqKu-hj1riIbEvTtD6Mr8XYNRy-499iOsQhHvZ1sFdt_DbTErM3l4w2O52t_rAk" /></form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        </main>
+    </div>
+
+    <footer b-2lcdyzdxtf class="border-top footer text-muted">
+        <div b-2lcdyzdxtf class="container">
+            &copy; 2026 - GymAssist - <a href="/Home/Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js?v=hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo"></script>
+    
+</body>
+</html>
+
