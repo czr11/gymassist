@@ -1,20 +1,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY ["GymAssist.csproj", "./"]
-RUN dotnet restore "./GymAssist.csproj"
+# Copiar y restaurar dependencias desde la subcarpeta
+COPY GymAssist/*.csproj ./GymAssist/
+WORKDIR /src/GymAssist
+RUN dotnet restore
 
+# Copiar todo el código
 COPY . .
-RUN dotnet build "GymAssist.csproj" -c Release -o /app/build
+WORKDIR /src/GymAssist
+RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
-FROM build AS publish
-RUN dotnet publish "GymAssist.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
 
-COPY --from=publish /app/publish .
-
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "GymAssist.dll"]
