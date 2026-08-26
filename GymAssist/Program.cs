@@ -1,5 +1,6 @@
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,17 +12,30 @@ builder.Services.AddDataProtection()
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Configure forwarded headers for proxies (Render, nginx, etc.)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+// Use forwarded headers middleware (must be before authentication)
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    // Only use HSTS if we're not behind a proxy
+    if (!app.Environment.IsDevelopment() && !app.Configuration.GetValue<bool>("Kestrel:DisableHsts"))
+    {
+        app.UseHsts();
+    }
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
