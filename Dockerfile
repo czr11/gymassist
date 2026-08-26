@@ -3,6 +3,7 @@ WORKDIR /src
 
 # Install LibMan CLI for restoring client-side libraries
 RUN dotnet tool install -g microsoft.web.librarymanager.cli
+ENV PATH="${PATH}:/root/.dotnet/tools"
 
 COPY GymAssist/GymAssist.csproj ./GymAssist/
 COPY GymAssist/libman.json ./GymAssist/
