@@ -1,8 +1,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+# Install LibMan CLI for restoring client-side libraries
+RUN dotnet tool install -g microsoft.web.librarymanager.cli
+
 COPY GymAssist/GymAssist.csproj ./GymAssist/
+COPY GymAssist/libman.json ./GymAssist/
 RUN dotnet restore "./GymAssist/GymAssist.csproj"
+
+# Restore client-side libraries
+RUN cd ./GymAssist && libman restore
 
 COPY GymAssist/. ./GymAssist/
 RUN dotnet publish "./GymAssist/GymAssist.csproj" -c Release -o /app/publish /p:UseAppHost=false
