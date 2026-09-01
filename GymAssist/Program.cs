@@ -59,10 +59,10 @@ app.Run();
 
 static string BuildConnectionString(IConfiguration configuration)
 {
-    var hostname = configuration["hostname"];
-    var database = configuration["dbname"];
-    var username = configuration["dbuser"];
-    var password = configuration["dbpass"];
+    var hostname = GetEnvironmentValue("hostname");
+    var database = GetEnvironmentValue("dbname");
+    var username = GetEnvironmentValue("dbuser");
+    var password = GetEnvironmentValue("dbpass");
 
     if (!string.IsNullOrWhiteSpace(hostname) &&
         !string.IsNullOrWhiteSpace(database) &&
@@ -81,6 +81,28 @@ static string BuildConnectionString(IConfiguration configuration)
         return connectionBuilder.ConnectionString;
     }
 
+    if (configuration["ASPNETCORE_ENVIRONMENT"] == "Production")
+    {
+        var missingVariables = new[]
+        {
+            (Name: "hostname", Value: hostname),
+            (Name: "dbname", Value: database),
+            (Name: "dbuser", Value: username),
+            (Name: "dbpass", Value: password)
+        }
+        .Where(variable => string.IsNullOrWhiteSpace(variable.Value))
+        .Select(variable => variable.Name);
+
+        throw new InvalidOperationException(
+            $"Faltan variables de entorno PostgreSQL en Render: {string.Join(", ", missingVariables)}.");
+    }
+
     return configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("No se encontró configuración de conexión PostgreSQL.");
+}
+
+static string? GetEnvironmentValue(string name)
+{
+    return Environment.GetEnvironmentVariable(name)
+        ?? Environment.GetEnvironmentVariable(name.ToUpperInvariant());
 }
