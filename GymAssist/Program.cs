@@ -59,10 +59,16 @@ app.Run();
 
 static string BuildConnectionString(IConfiguration configuration)
 {
-    var hostname = GetEnvironmentValue("hostname");
-    var database = GetEnvironmentValue("dbname");
-    var username = GetEnvironmentValue("dbuser");
-    var password = GetEnvironmentValue("dbpass");
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrWhiteSpace(databaseUrl))
+    {
+        return databaseUrl;
+    }
+
+    var hostname = GetEnvironmentValue("hostname", "DB_HOST");
+    var database = GetEnvironmentValue("dbname", "DB_NAME");
+    var username = GetEnvironmentValue("dbuser", "DB_USER");
+    var password = GetEnvironmentValue("dbpass", "DB_PASSWORD");
 
     if (!string.IsNullOrWhiteSpace(hostname) &&
         !string.IsNullOrWhiteSpace(database) &&
@@ -101,8 +107,9 @@ static string BuildConnectionString(IConfiguration configuration)
         ?? throw new InvalidOperationException("No se encontró configuración de conexión PostgreSQL.");
 }
 
-static string? GetEnvironmentValue(string name)
+static string? GetEnvironmentValue(string name, string alternateName)
 {
     return Environment.GetEnvironmentVariable(name)
-        ?? Environment.GetEnvironmentVariable(name.ToUpperInvariant());
+    ?? Environment.GetEnvironmentVariable(alternateName)
+    ?? Environment.GetEnvironmentVariable(alternateName.ToLowerInvariant());
 }
