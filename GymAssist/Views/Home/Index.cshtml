@@ -63,16 +63,18 @@
     </div>
 </div>
 
-@if (TempData["CheckInMessage"] != null)
+@if (Model.ResultMessage != null)
 {
     <div class="modal fade show" id="resultModal" tabindex="-1" aria-modal="true" role="dialog" style="display:block; background: rgba(0,0,0,.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-modal modal-result">
+            <div class="modal-content glass-modal modal-result result-@Model.ResultLevel">
                 <div class="modal-body text-center p-4">
-                    <h3 class="mb-2">@TempData["CheckInTitle"]</h3>
-                    <p class="mb-3">@TempData["CheckInMessage"]</p>
-                    <div class="result-pill">@TempData["CheckInStatus"]</div>
-                    <p class="small mt-3 mb-0">@TempData["CheckInDetail"]</p>
+                    <h3 class="mb-2">@Model.ResultTitle</h3>
+                    <p class="mb-3">@Model.ResultMessage</p>
+                    @if (Model.ResultDetail != null)
+                    {
+                        <p class="small mt-3 mb-0">@Model.ResultDetail</p>
+                    }
                     <button type="button" class="btn btn-primary mt-4" onclick="document.getElementById('resultModal').remove();">Aceptar</button>
                 </div>
             </div>

@@ -1,0 +1,42 @@
+@model IEnumerable<GymAssist.Dtos.UsuarioDto>
+
+@{
+    ViewData["Title"] = "Prueba de base de datos";
+}
+
+<h1>Usuarios</h1>
+
+@if (ViewBag.Error is string error)
+{
+    <p style="color: red;">Error de conexión: @error</p>
+}
+else if (!Model.Any())
+{
+    <p>Conexión correcta. No hay usuarios registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Activo</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var usuario in Model)
+        {
+            <tr>
+                <td>@usuario.IdUsuario</td>
+                <td>@usuario.Nombre</td>
+                <td>@usuario.Email</td>
+                <td>@usuario.Rol</td>
+                <td>@usuario.Activo</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

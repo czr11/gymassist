@@ -185,6 +185,33 @@ body {
   font-weight: 600;
 }
 
+.result-warning {
+  border-color: #ffc107;
+}
+
+.result-warning h3,
+.result-warning .small {
+  color: #ffc107;
+}
+
+.result-danger {
+  border-color: #dc3545;
+}
+
+.result-danger h3,
+.result-danger .small {
+  color: #ff6b7a;
+}
+
+.result-success {
+  border-color: #198754;
+}
+
+.result-success h3,
+.result-success .small {
+  color: #63d49b;
+}
+
 .glass-modal .form-label,
 .glass-modal .modal-subtitle {
   color: rgba(246, 247, 251, 0.85);

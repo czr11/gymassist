@@ -1,6 +1,10 @@
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using GymAssist.Controllers;
+using GymAssist.Data;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +15,11 @@ builder.Services.AddDataProtection()
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<CheckInOptions>(builder.Configuration.GetSection("CheckIn"));
+var connectionString = BuildConnectionString(builder.Configuration);
+builder.Services.AddDbContext<GymAssistDbContext>(options =>
+    options.UseNpgsql(connectionString)
+        .UseSnakeCaseNamingConvention());
 
 // Configure forwarded headers for proxies (Render, nginx, etc.)
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -47,3 +56,31 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+static string BuildConnectionString(IConfiguration configuration)
+{
+    var hostname = configuration["hostname"];
+    var database = configuration["dbname"];
+    var username = configuration["dbuser"];
+    var password = configuration["dbpass"];
+
+    if (!string.IsNullOrWhiteSpace(hostname) &&
+        !string.IsNullOrWhiteSpace(database) &&
+        !string.IsNullOrWhiteSpace(username) &&
+        !string.IsNullOrWhiteSpace(password))
+    {
+        var connectionBuilder = new NpgsqlConnectionStringBuilder
+        {
+            Host = hostname,
+            Port = 5432,
+            Database = database,
+            Username = username,
+            Password = password
+        };
+
+        return connectionBuilder.ConnectionString;
+    }
+
+    return configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("No se encontró configuración de conexión PostgreSQL.");
+}

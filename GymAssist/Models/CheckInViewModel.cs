@@ -11,4 +11,9 @@ public class CheckInViewModel
     [Required(ErrorMessage = "Selecciona un gimnasio.")]
     [Display(Name = "Gimnasio")]
     public string GymName { get; set; } = "Alphamma.sv";
+
+    public string? ResultTitle { get; set; }
+    public string? ResultMessage { get; set; }
+    public string? ResultDetail { get; set; }
+    public string? ResultLevel { get; set; }
 }
