@@ -301,6 +301,20 @@ body {
 
 .admin-filter-form {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-filter-search {
+  min-width: 250px;
+  background: rgba(8, 20, 37, 0.86);
+  border-color: rgba(143, 208, 255, 0.34);
+  color: #e8f0f8;
+}
+
+.admin-filter-search::placeholder {
+  color: rgba(232, 240, 248, 0.58);
 }
 
 .admin-filter-select {
@@ -580,6 +594,15 @@ body {
   .admin-section-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .admin-filter-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-filter-search {
+    min-width: 0;
   }
 
   .admin-menu {

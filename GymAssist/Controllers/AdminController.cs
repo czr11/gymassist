@@ -480,16 +480,34 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin,super_admin")]
-    public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null)
+    public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null, string? buscar = null)
     {
         var query = from pago in dbContext.Pagos.AsNoTracking()
                     join cliente in dbContext.Clientes.AsNoTracking() on pago.IdCliente equals cliente.IdCliente
                     join membresia in dbContext.Membresias.AsNoTracking() on pago.IdMembresia equals membresia.IdMembresia
                     select new { pago, cliente, membresia };
 
-        if (estado is "pagado" or "pendiente" or "vencido" or "cancelado")
+        buscar = buscar?.Trim();
+        if (!string.IsNullOrWhiteSpace(buscar))
         {
-            query = query.Where(item => item.pago.Estado == estado);
+            var pattern = $"%{buscar}%";
+            var codigoCliente = int.TryParse(buscar, out var parsedCode) ? parsedCode : (int?)null;
+            query = query.Where(item =>
+                (codigoCliente.HasValue && item.cliente.IdCliente == codigoCliente.Value) ||
+                EF.Functions.ILike(item.cliente.Nombres + " " + item.cliente.Apellidos, pattern) ||
+                EF.Functions.ILike(item.cliente.Email ?? string.Empty, pattern) ||
+                EF.Functions.ILike(item.cliente.Cedula, pattern) ||
+                EF.Functions.ILike(item.cliente.Telefono ?? string.Empty, pattern));
+        }
+
+        if (estado == "vencido")
+        {
+            query = query.Where(item => item.pago.Estado != "cancelado" && item.pago.FechaFin < DateTime.UtcNow.Date);
+        }
+        else if (estado is "pagado" or "pendiente" or "cancelado")
+        {
+            query = query.Where(item => item.pago.Estado == estado &&
+                (estado == "cancelado" || item.pago.FechaFin >= DateTime.UtcNow.Date));
         }
         else
         {
@@ -507,6 +525,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         ViewData["PaymentStatusFilter"] = estado;
         ViewData["PaymentTypeFilter"] = tipo;
+        ViewData["PaymentSearch"] = buscar ?? string.Empty;
         var pagos = await query
             .OrderByDescending(item => item.pago.FechaPago)
             .Select(item => new AdminPaymentListViewModel
@@ -519,7 +538,9 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
                 FechaPago = item.pago.FechaPago,
                 FechaInicio = item.pago.FechaInicio,
                 FechaFin = item.pago.FechaFin,
-                Estado = item.pago.Estado
+                Estado = item.pago.Estado != "cancelado" && item.pago.FechaFin < DateTime.UtcNow.Date
+                    ? "vencido"
+                    : item.pago.Estado
             })
             .ToListAsync();
         return View(pagos);

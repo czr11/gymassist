@@ -3,6 +3,7 @@
     ViewData["Title"] = "Gestión de pagos";
     var statusFilter = ViewData["PaymentStatusFilter"]?.ToString() ?? "todos";
     var typeFilter = ViewData["PaymentTypeFilter"]?.ToString() ?? "todos";
+    var paymentSearch = ViewData["PaymentSearch"]?.ToString() ?? string.Empty;
 }
 
 <div class="admin-shell">
@@ -29,6 +30,7 @@
         </div>
         <div class="admin-heading__actions">
             <form asp-action="Pagos" method="get" class="admin-filter-form">
+                <input type="search" name="buscar" value="@paymentSearch" class="form-control admin-filter-search" placeholder="Nombre, correo, código o teléfono" aria-label="Buscar cliente" />
                 <select name="estado" class="form-select admin-filter-select" onchange="this.form.submit()">
                     <option value="todos" selected="@(statusFilter == "todos" ? "selected" : null)">Todos los estados</option>
                     <option value="pagado" selected="@(statusFilter == "pagado" ? "selected" : null)">Pagados</option>
@@ -41,6 +43,7 @@
                     <option value="matricula" selected="@(typeFilter == "matricula" ? "selected" : null)">Matrículas</option>
                     <option value="mensualidad" selected="@(typeFilter == "mensualidad" ? "selected" : null)">Mensualidades</option>
                 </select>
+                <button type="submit" class="btn btn-outline-light">Buscar</button>
             </form>
             <a asp-action="CrearPago" class="btn btn-primary">Nuevo pago</a>
         </div>
