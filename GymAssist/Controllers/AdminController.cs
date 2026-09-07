@@ -482,15 +482,14 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     [Authorize(Roles = "admin,super_admin")]
     public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null)
     {
-        var query = dbContext.Pagos
-            .AsNoTracking()
-            .Include(pago => pago.Cliente)
-            .Include(pago => pago.Membresia)
-            .AsQueryable();
+        var query = from pago in dbContext.Pagos.AsNoTracking()
+                    join cliente in dbContext.Clientes.AsNoTracking() on pago.IdCliente equals cliente.IdCliente
+                    join membresia in dbContext.Membresias.AsNoTracking() on pago.IdMembresia equals membresia.IdMembresia
+                    select new { pago, cliente, membresia };
 
         if (estado is "pagado" or "pendiente" or "vencido" or "cancelado")
         {
-            query = query.Where(pago => pago.Estado == estado);
+            query = query.Where(item => item.pago.Estado == estado);
         }
         else
         {
@@ -499,7 +498,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         if (tipo is "matricula" or "mensualidad")
         {
-            query = query.Where(pago => pago.TipoPago == tipo);
+            query = query.Where(item => item.pago.TipoPago == tipo);
         }
         else
         {
@@ -508,7 +507,22 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         ViewData["PaymentStatusFilter"] = estado;
         ViewData["PaymentTypeFilter"] = tipo;
-        return View(await query.OrderByDescending(pago => pago.FechaPago).ToListAsync());
+        var pagos = await query
+            .OrderByDescending(item => item.pago.FechaPago)
+            .Select(item => new AdminPaymentListViewModel
+            {
+                IdPago = item.pago.IdPago,
+                Cliente = item.cliente.Nombres + " " + item.cliente.Apellidos,
+                Membresia = item.membresia.Nombre,
+                TipoPago = item.pago.TipoPago,
+                Monto = item.pago.Monto,
+                FechaPago = item.pago.FechaPago,
+                FechaInicio = item.pago.FechaInicio,
+                FechaFin = item.pago.FechaFin,
+                Estado = item.pago.Estado
+            })
+            .ToListAsync();
+        return View(pagos);
     }
 
     [Authorize(Roles = "admin,super_admin")]

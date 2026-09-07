@@ -1,4 +1,4 @@
-@model IReadOnlyList<GymAssist.Models.Pago>
+@model IReadOnlyList<GymAssist.Models.AdminPaymentListViewModel>
 @{
     ViewData["Title"] = "Gestión de pagos";
     var statusFilter = ViewData["PaymentStatusFilter"]?.ToString() ?? "todos";
@@ -53,8 +53,8 @@
             @foreach (var pago in Model)
             {
                 <tr>
-                    <td>@pago.Cliente.Nombres @pago.Cliente.Apellidos</td>
-                    <td>@pago.Membresia.Nombre</td>
+                    <td>@pago.Cliente</td>
+                    <td>@pago.Membresia</td>
                     <td><span class="admin-role">@(pago.TipoPago == "matricula" ? "Matrícula" : "Mensualidad")</span></td>
                     <td>@pago.Monto.ToString("C")</td>
                     <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
