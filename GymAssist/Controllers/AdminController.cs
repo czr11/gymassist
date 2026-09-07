@@ -349,6 +349,15 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             return NotFound();
         }
 
+        var membresiaActual = await dbContext.Pagos
+            .Where(pago => pago.IdCliente == id && pago.Estado != "cancelado")
+            .OrderByDescending(pago => pago.FechaPago)
+            .FirstOrDefaultAsync();
+        ViewBag.Membresias = await dbContext.Membresias
+            .Where(membresia => membresia.Activo)
+            .OrderBy(membresia => membresia.Nombre)
+            .ToListAsync();
+
         return View(new AdminClientViewModel
         {
             IdCliente = cliente.IdCliente,
@@ -360,7 +369,8 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             Direccion = cliente.Direccion,
             FechaNacimiento = cliente.FechaNacimiento,
             Genero = cliente.Genero?.ToString(),
-            Activo = cliente.Activo
+            Activo = cliente.Activo,
+            IdMembresia = membresiaActual?.IdMembresia
         });
     }
 
@@ -375,6 +385,14 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             return NotFound();
         }
 
+        var membresia = model.IdMembresia.HasValue
+            ? await dbContext.Membresias.FirstOrDefaultAsync(candidate => candidate.IdMembresia == model.IdMembresia && candidate.Activo)
+            : null;
+        if (membresia is null)
+        {
+            ModelState.AddModelError(nameof(model.IdMembresia), "Selecciona una membresía activa.");
+        }
+
         var cedula = model.Cedula.Trim();
         if (await dbContext.Clientes.AnyAsync(candidate =>
                 candidate.IdCliente != model.IdCliente && candidate.Cedula == cedula))
@@ -384,6 +402,10 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         if (!ModelState.IsValid)
         {
+            ViewBag.Membresias = await dbContext.Membresias
+                .Where(candidate => candidate.Activo)
+                .OrderBy(candidate => candidate.Nombre)
+                .ToListAsync();
             return View(model);
         }
 
@@ -398,6 +420,29 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         cliente.Activo = model.Activo;
 
         await dbContext.SaveChangesAsync();
+
+        var membresiaActual = await dbContext.Pagos
+            .Where(pago => pago.IdCliente == cliente.IdCliente && pago.Estado != "cancelado")
+            .OrderByDescending(pago => pago.FechaPago)
+            .FirstOrDefaultAsync();
+        if (membresiaActual?.IdMembresia != membresia!.IdMembresia)
+        {
+            dbContext.Pagos.Add(new Pago
+            {
+                IdCliente = cliente.IdCliente,
+                IdMembresia = membresia.IdMembresia,
+                IdUsuarioRegistro = GetCurrentUserId(),
+                Monto = membresia.Precio,
+                TipoPago = "matricula",
+                FechaPago = DateTime.UtcNow,
+                FechaInicio = DateTime.Today,
+                FechaFin = DateTime.Today.AddDays(membresia.DuracionDias),
+                MetodoPago = "efectivo",
+                Estado = "pagado",
+                Observaciones = "Matrícula generada al cambiar la membresía del cliente."
+            });
+            await dbContext.SaveChangesAsync();
+        }
         TempData["AdminNotice"] = "Cliente actualizado correctamente.";
         return RedirectToAction(nameof(Clientes));
     }
