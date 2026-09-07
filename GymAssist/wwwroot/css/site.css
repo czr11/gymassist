@@ -313,11 +313,16 @@ body {
 
 .admin-table {
   min-width: 780px;
-  color: #f6f7fb;
+  --bs-table-bg: transparent;
+  --bs-table-color: #e8f0f8;
+  --bs-table-border-color: rgba(255, 255, 255, 0.1);
+  color: #e8f0f8;
+  background: transparent;
 }
 
 .admin-table th {
-  color: rgba(246, 247, 251, 0.68);
+  color: #a8c0d8;
+  background: rgba(20, 45, 76, 0.82);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -326,6 +331,7 @@ body {
 }
 
 .admin-table td {
+  background: rgba(8, 20, 37, 0.7);
   border-bottom-color: rgba(255, 255, 255, 0.08);
   padding: 1rem 1.1rem;
   vertical-align: middle;
@@ -341,6 +347,31 @@ body {
 
 .admin-table tbody tr:hover {
   background: rgba(143, 208, 255, 0.07);
+}
+
+.admin-table tbody tr:hover td {
+  background: rgba(24, 61, 97, 0.74);
+}
+
+.admin-date,
+.admin-time {
+  display: block;
+}
+
+.admin-date {
+  color: #e8f0f8;
+  font-weight: 600;
+}
+
+.admin-time {
+  margin-top: 0.2rem;
+  color: #8fd0ff;
+  font-size: 0.82rem;
+}
+
+.admin-date--empty {
+  color: rgba(232, 240, 248, 0.56);
+  font-weight: 400;
 }
 
 .admin-table__actions-header,

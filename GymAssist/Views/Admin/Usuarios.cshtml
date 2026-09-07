@@ -59,7 +59,18 @@
                             @(usuario.Activo ? "Activo" : "Inactivo")
                         </span>
                     </td>
-                    <td>@(usuario.UltimoAcceso?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                    <td>
+                        @if (usuario.UltimoAcceso.HasValue)
+                        {
+                            var horaLocal = DateTime.SpecifyKind(usuario.UltimoAcceso.Value, DateTimeKind.Utc).ToLocalTime();
+                            <span class="admin-date">@horaLocal.ToString("dd/MM/yyyy")</span>
+                            <span class="admin-time">@horaLocal.ToString("HH:mm")</span>
+                        }
+                        else
+                        {
+                            <span class="admin-date admin-date--empty">Nunca</span>
+                        }
+                    </td>
                     <td class="admin-table__actions-cell">
                         <div class="admin-row-actions">
                             <a asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario" class="admin-action admin-action--edit">
