@@ -30,7 +30,7 @@
     <div class="admin-section-toolbar">
         <div>
             <h2>Administradores registrados</h2>
-            <span>@Model.Count usuario(s)</span>
+            <span class="admin-section-toolbar__count">@Model.Count usuario(s)</span>
         </div>
         <a asp-action="CrearUsuario" class="btn btn-primary">Nuevo usuario</a>
     </div>
@@ -44,7 +44,7 @@
                     <th>Rol</th>
                     <th>Estado</th>
                     <th>Último acceso</th>
-                    <th class="text-end">Acciones</th>
+                    <th class="admin-table__actions-header">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,14 +60,24 @@
                         </span>
                     </td>
                     <td>@(usuario.UltimoAcceso?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
-                    <td class="text-end">
+                    <td class="admin-table__actions-cell">
                         <div class="admin-row-actions">
-                            <a asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario" class="btn btn-sm btn-outline-light">Editar</a>
-                            @if (usuario.Activo && usuario.IdUsuario.ToString() != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                            <a asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario" class="admin-action admin-action--edit">
+                                <span class="admin-action__icon">E</span>
+                                <span>Editar</span>
+                            </a>
+                            @if (usuario.IdUsuario.ToString() != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
                             {
-                                <form asp-action="EliminarUsuario" asp-route-id="@usuario.IdUsuario" method="post" onsubmit="return confirm('¿Desactivar este usuario?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                                <form asp-action="EliminarUsuario" asp-route-id="@usuario.IdUsuario" method="post" onsubmit="return confirm('¿Eliminar este usuario? La cuenta se desactivará y conservará su historial.');">
+                                    <button type="submit" class="admin-action admin-action--delete">
+                                        <span class="admin-action__icon">X</span>
+                                        <span>Eliminar</span>
+                                    </button>
                                 </form>
+                            }
+                            else
+                            {
+                                <span class="admin-action admin-action--current">Sesión actual</span>
                             }
                         </div>
                     </td>

@@ -299,6 +299,11 @@ body {
   font-size: 0.9rem;
 }
 
+.admin-section-toolbar__count {
+  display: block;
+  margin-top: 0.25rem;
+}
+
 .admin-table-wrap {
   overflow-x: auto;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -322,6 +327,97 @@ body {
 
 .admin-table td {
   border-bottom-color: rgba(255, 255, 255, 0.08);
+  padding: 1rem 1.1rem;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  padding: 0.9rem 1.1rem;
+}
+
+.admin-table tbody tr {
+  transition: background 160ms ease;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(143, 208, 255, 0.07);
+}
+
+.admin-table__actions-header,
+.admin-table__actions-cell {
+  min-width: 230px;
+  text-align: right;
+}
+
+.admin-row-actions {
+  justify-content: flex-end;
+}
+
+.admin-row-actions form {
+  margin: 0;
+}
+
+.admin-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 34px;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-action__icon {
+  display: inline-grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-action--edit {
+  border-color: rgba(143, 208, 255, 0.4);
+  background: rgba(143, 208, 255, 0.12);
+  color: #a9dcff;
+}
+
+.admin-action--edit:hover {
+  background: rgba(143, 208, 255, 0.24);
+  color: #fff;
+}
+
+.admin-action--edit .admin-action__icon {
+  background: #8fd0ff;
+  color: #07111f;
+}
+
+.admin-action--delete {
+  border-color: rgba(255, 139, 152, 0.45);
+  background: rgba(255, 107, 122, 0.12);
+  color: #ffabb5;
+}
+
+.admin-action--delete:hover {
+  background: rgba(255, 107, 122, 0.24);
+  color: #fff;
+}
+
+.admin-action--delete .admin-action__icon {
+  background: #ff8b98;
+  color: #3a1018;
+}
+
+.admin-action--current {
+  color: rgba(246, 247, 251, 0.48);
+  font-size: 0.75rem;
 }
 
 .admin-table tbody tr:last-child td {
