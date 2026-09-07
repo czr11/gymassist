@@ -253,6 +253,77 @@ body {
   margin-bottom: 0.75rem;
 }
 
+.admin-shell {
+  padding: 2rem 0 4rem;
+}
+
+.admin-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-heading h1 {
+  margin-bottom: 0.5rem;
+}
+
+.admin-heading p,
+.admin-welcome p {
+  color: rgba(246, 247, 251, 0.78);
+}
+
+.admin-menu {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.admin-menu__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 130px;
+  padding: 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(8, 14, 30, 0.72);
+  color: #f6f7fb;
+  text-decoration: none;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.admin-menu__item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(143, 208, 255, 0.7);
+  background: rgba(37, 140, 251, 0.16);
+  color: #fff;
+}
+
+.admin-menu__item span {
+  color: rgba(246, 247, 251, 0.68);
+  font-size: 0.92rem;
+}
+
+.admin-welcome {
+  margin-top: 1.5rem;
+  padding: 2rem;
+  border-radius: 18px;
+  background: rgba(8, 14, 30, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 767px) {
+  .admin-heading {
+    flex-direction: column;
+  }
+
+  .admin-menu {
+    grid-template-columns: 1fr;
+  }
+}
+
 .auth-form .form-control,
 .auth-form .form-select,
 .hero-card .form-control,

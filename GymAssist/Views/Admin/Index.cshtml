@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Panel de administración";
+}
+
+<div class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <span class="auth-badge">GymAssist / Administración</span>
+            <h1>Panel de administración</h1>
+            <p>Gestiona la operación del gimnasio desde un solo lugar.</p>
+        </div>
+        <form asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
+        </form>
+    </div>
+
+    <nav class="admin-menu" aria-label="Módulos de administración">
+        <a asp-action="Usuarios" class="admin-menu__item">
+            <strong>Gestión de usuarios</strong>
+            <span>Administradores y permisos</span>
+        </a>
+        <a asp-action="Clientes" class="admin-menu__item">
+            <strong>Gestión de clientes</strong>
+            <span>Miembros y datos personales</span>
+        </a>
+        <a asp-action="Pagos" class="admin-menu__item">
+            <strong>Gestión de pagos</strong>
+            <span>Membresías y transacciones</span>
+        </a>
+    </nav>
+
+    <section class="admin-welcome">
+        <span class="hero-badge">Sesión activa</span>
+        <h2>Bienvenido, @User.Identity?.Name</h2>
+        <p>Selecciona un módulo para comenzar.</p>
+    </section>
+</div>

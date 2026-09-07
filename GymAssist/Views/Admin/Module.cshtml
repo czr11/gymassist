@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = ViewData["ModuleTitle"];
+}
+
+<div class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <span class="auth-badge">GymAssist / Administración</span>
+            <h1>@ViewData["ModuleTitle"]</h1>
+            <p>@ViewData["ModuleDescription"]</p>
+        </div>
+        <form asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
+        </form>
+    </div>
+
+    <nav class="admin-menu" aria-label="Módulos de administración">
+        <a asp-action="Usuarios" class="admin-menu__item">Gestión de usuarios</a>
+        <a asp-action="Clientes" class="admin-menu__item">Gestión de clientes</a>
+        <a asp-action="Pagos" class="admin-menu__item">Gestión de pagos</a>
+    </nav>
+
+    <section class="admin-welcome">
+        <h2>Módulo preparado</h2>
+        <p>Esta sección está lista para incorporar sus operaciones.</p>
+    </section>
+</div>
