@@ -1,6 +1,17 @@
 @model IReadOnlyList<GymAssist.Models.Usuario>
+@inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Gestión de usuarios";
+    var timeZoneId = Configuration["TimeZone:Id"] ?? "America/El_Salvador";
+    TimeZoneInfo gymTimeZone;
+    try
+    {
+        gymTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+    }
+    catch (TimeZoneNotFoundException)
+    {
+        gymTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+    }
 }
 
 <div class="admin-shell">
@@ -62,7 +73,9 @@
                     <td>
                         @if (usuario.UltimoAcceso.HasValue)
                         {
-                            var horaLocal = DateTime.SpecifyKind(usuario.UltimoAcceso.Value, DateTimeKind.Utc).ToLocalTime();
+                            var horaLocal = TimeZoneInfo.ConvertTimeFromUtc(
+                                DateTime.SpecifyKind(usuario.UltimoAcceso.Value, DateTimeKind.Utc),
+                                gymTimeZone);
                             <span class="admin-date">@horaLocal.ToString("dd/MM/yyyy")</span>
                             <span class="admin-time">@horaLocal.ToString("HH:mm")</span>
                         }
