@@ -1,0 +1,104 @@
+@model IReadOnlyList<GymAssist.Models.Cliente>
+@{
+    ViewData["Title"] = "Gestión de clientes";
+}
+
+<div class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <span class="auth-badge">GymAssist / Administración</span>
+            <h1>Gestión de clientes</h1>
+            <p>Administra los datos y el estado de los clientes del gimnasio.</p>
+        </div>
+        <div class="admin-heading__actions">
+            <a asp-action="Index" class="btn btn-outline-light">Panel</a>
+            <form asp-action="Logout" method="post">
+                <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["AdminNotice"] is not null)
+    {
+        <div class="alert alert-success">@TempData["AdminNotice"]</div>
+    }
+    @if (TempData["AdminError"] is not null)
+    {
+        <div class="alert alert-danger">@TempData["AdminError"]</div>
+    }
+
+    <div class="admin-section-toolbar">
+        <div>
+            <h2>Clientes registrados</h2>
+            <span class="admin-section-toolbar__count">@Model.Count cliente(s)</span>
+        </div>
+        <a asp-action="CrearCliente" class="btn btn-primary">Nuevo cliente</a>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Cédula</th>
+                    <th>Contacto</th>
+                    <th>Género</th>
+                    <th>Estado</th>
+                    <th class="admin-table__actions-header">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var cliente in Model)
+            {
+                <tr>
+                    <td>
+                        <span class="admin-date">@cliente.Nombres @cliente.Apellidos</span>
+                        @if (cliente.FechaNacimiento.HasValue)
+                        {
+                            <span class="admin-time">Nacimiento: @cliente.FechaNacimiento.Value.ToString("dd/MM/yyyy")</span>
+                        }
+                    </td>
+                    <td>@cliente.Cedula</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(cliente.Email))
+                        {
+                            <span class="admin-date">@cliente.Email</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(cliente.Telefono))
+                        {
+                            <span class="admin-time">@cliente.Telefono</span>
+                        }
+                        @if (string.IsNullOrWhiteSpace(cliente.Email) && string.IsNullOrWhiteSpace(cliente.Telefono))
+                        {
+                            <span class="admin-date admin-date--empty">Sin contacto</span>
+                        }
+                    </td>
+                    <td>@(cliente.Genero?.ToString() ?? "-")</td>
+                    <td>
+                        <span class="admin-status @(cliente.Activo ? "admin-status--active" : "admin-status--inactive")">
+                            @(cliente.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </td>
+                    <td class="admin-table__actions-cell">
+                        <div class="admin-row-actions">
+                            <a asp-action="EditarCliente" asp-route-id="@cliente.IdCliente" class="admin-action admin-action--edit">
+                                <span class="admin-action__icon">E</span>
+                                <span>Editar</span>
+                            </a>
+                            @if (cliente.Activo)
+                            {
+                                <form asp-action="EliminarCliente" asp-route-id="@cliente.IdCliente" method="post" onsubmit="return confirm('¿Eliminar este cliente? La cuenta se desactivará y conservará su historial.');">
+                                    <button type="submit" class="admin-action admin-action--delete">
+                                        <span class="admin-action__icon">X</span>
+                                        <span>Eliminar</span>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

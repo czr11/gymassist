@@ -492,6 +492,10 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.admin-form-grid__full {
+  grid-column: 1 / -1;
+}
+
 .admin-form .form-control,
 .admin-form .form-select {
   background: rgba(255, 255, 255, 0.08);

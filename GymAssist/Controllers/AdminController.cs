@@ -236,11 +236,151 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin,super_admin")]
-    public IActionResult Clientes()
+    public async Task<IActionResult> Clientes()
     {
-        ViewData["ModuleTitle"] = "Gestión de clientes";
-        ViewData["ModuleDescription"] = "Consulta y administra los clientes del gimnasio.";
-        return View("Module");
+        var clientes = await dbContext.Clientes
+            .AsNoTracking()
+            .OrderBy(cliente => cliente.Apellidos)
+            .ThenBy(cliente => cliente.Nombres)
+            .ToListAsync();
+
+        return View(clientes);
+    }
+
+    [Authorize(Roles = "admin,super_admin")]
+    public IActionResult CrearCliente()
+    {
+        return View(new AdminClientViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> CrearCliente(AdminClientViewModel model)
+    {
+        var cedula = model.Cedula.Trim();
+        if (await dbContext.Clientes.AnyAsync(cliente => cliente.Cedula == cedula))
+        {
+            ModelState.AddModelError(nameof(model.Cedula), "Ya existe un cliente con esa cédula.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        dbContext.Clientes.Add(new Cliente
+        {
+            Nombres = model.Nombres.Trim(),
+            Apellidos = model.Apellidos.Trim(),
+            Cedula = cedula,
+            Telefono = CleanOptional(model.Telefono),
+            Email = CleanOptional(model.Email)?.ToLowerInvariant(),
+            Direccion = CleanOptional(model.Direccion),
+            FechaNacimiento = model.FechaNacimiento,
+            Genero = ParseGenero(model.Genero),
+            FechaRegistro = DateTime.UtcNow,
+            Activo = model.Activo,
+            IdUsuarioRegistro = GetCurrentUserId()
+        });
+        await dbContext.SaveChangesAsync();
+
+        TempData["AdminNotice"] = "Cliente creado correctamente.";
+        return RedirectToAction(nameof(Clientes));
+    }
+
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EditarCliente(int id)
+    {
+        var cliente = await dbContext.Clientes.FindAsync(id);
+        if (cliente is null)
+        {
+            return NotFound();
+        }
+
+        return View(new AdminClientViewModel
+        {
+            IdCliente = cliente.IdCliente,
+            Nombres = cliente.Nombres,
+            Apellidos = cliente.Apellidos,
+            Cedula = cliente.Cedula,
+            Telefono = cliente.Telefono,
+            Email = cliente.Email,
+            Direccion = cliente.Direccion,
+            FechaNacimiento = cliente.FechaNacimiento,
+            Genero = cliente.Genero?.ToString(),
+            Activo = cliente.Activo
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EditarCliente(AdminClientViewModel model)
+    {
+        var cliente = await dbContext.Clientes.FindAsync(model.IdCliente);
+        if (cliente is null)
+        {
+            return NotFound();
+        }
+
+        var cedula = model.Cedula.Trim();
+        if (await dbContext.Clientes.AnyAsync(candidate =>
+                candidate.IdCliente != model.IdCliente && candidate.Cedula == cedula))
+        {
+            ModelState.AddModelError(nameof(model.Cedula), "Ya existe un cliente con esa cédula.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        cliente.Nombres = model.Nombres.Trim();
+        cliente.Apellidos = model.Apellidos.Trim();
+        cliente.Cedula = cedula;
+        cliente.Telefono = CleanOptional(model.Telefono);
+        cliente.Email = CleanOptional(model.Email)?.ToLowerInvariant();
+        cliente.Direccion = CleanOptional(model.Direccion);
+        cliente.FechaNacimiento = model.FechaNacimiento;
+        cliente.Genero = ParseGenero(model.Genero);
+        cliente.Activo = model.Activo;
+
+        await dbContext.SaveChangesAsync();
+        TempData["AdminNotice"] = "Cliente actualizado correctamente.";
+        return RedirectToAction(nameof(Clientes));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EliminarCliente(int id)
+    {
+        var cliente = await dbContext.Clientes.FindAsync(id);
+        if (cliente is null)
+        {
+            return NotFound();
+        }
+
+        cliente.Activo = false;
+        await dbContext.SaveChangesAsync();
+        TempData["AdminNotice"] = "Cliente desactivado correctamente.";
+        return RedirectToAction(nameof(Clientes));
+    }
+
+    private int? GetCurrentUserId()
+    {
+        return int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+    }
+
+    private static string? CleanOptional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static char? ParseGenero(string? genero)
+    {
+        return string.IsNullOrWhiteSpace(genero) ? null : genero[0];
     }
 
     [Authorize(Roles = "admin,super_admin")]
