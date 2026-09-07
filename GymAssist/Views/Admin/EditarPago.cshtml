@@ -8,7 +8,6 @@
         <input asp-for="IdPago" type="hidden" /><div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <div class="admin-form-grid">
             <div><label asp-for="IdCliente" class="form-label"></label><select asp-for="IdCliente" class="form-select">@foreach (var cliente in (IEnumerable<GymAssist.Models.Cliente>)ViewBag.Clientes){<option value="@cliente.IdCliente">@cliente.Nombres @cliente.Apellidos - @cliente.Cedula</option>}</select></div>
-            <div><label asp-for="IdMembresia" class="form-label"></label><select asp-for="IdMembresia" class="form-select">@foreach (var membresia in (IEnumerable<GymAssist.Models.Membresia>)ViewBag.Membresias){<option value="@membresia.IdMembresia">@membresia.Nombre - @membresia.Precio.ToString("C")</option>}</select></div>
             <div><label asp-for="TipoPago" class="form-label"></label><select asp-for="TipoPago" class="form-select"><option value="mensualidad">Mensualidad</option><option value="matricula">Matrícula</option></select></div>
             <div><label asp-for="Monto" class="form-label"></label><input asp-for="Monto" class="form-control" step="0.01" /></div>
             <div><label asp-for="FechaPago" class="form-label"></label><input asp-for="FechaPago" class="form-control" type="date" /></div>

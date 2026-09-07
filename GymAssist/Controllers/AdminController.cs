@@ -537,10 +537,10 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     [Authorize(Roles = "admin,super_admin")]
     public async Task<IActionResult> CrearPago(AdminPaymentViewModel model)
     {
-        var membresia = await dbContext.Membresias.FirstOrDefaultAsync(item => item.IdMembresia == model.IdMembresia && item.Activo);
+        var membresia = await GetCurrentMembershipAsync(model.IdCliente);
         if (membresia is null)
         {
-            ModelState.AddModelError(nameof(model.IdMembresia), "Selecciona una membresía activa.");
+            ModelState.AddModelError(nameof(model.IdCliente), "El cliente no tiene una membresía activa asignada.");
         }
         if (model.FechaFin < model.FechaInicio)
         {
@@ -554,7 +554,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         dbContext.Pagos.Add(new Pago
         {
-            IdCliente = model.IdCliente, IdMembresia = model.IdMembresia, IdUsuarioRegistro = GetCurrentUserId(),
+            IdCliente = model.IdCliente, IdMembresia = membresia!.IdMembresia, IdUsuarioRegistro = GetCurrentUserId(),
             Monto = model.Monto, TipoPago = model.TipoPago, FechaPago = model.FechaPago,
             FechaInicio = model.FechaInicio, FechaFin = model.FechaFin, MetodoPago = model.MetodoPago,
             Comprobante = CleanOptional(model.Comprobante), Estado = model.Estado,
@@ -591,7 +591,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             return View(model);
         }
 
-        pago.IdCliente = model.IdCliente; pago.IdMembresia = model.IdMembresia; pago.Monto = model.Monto;
+        pago.IdCliente = model.IdCliente; pago.Monto = model.Monto;
         pago.TipoPago = model.TipoPago; pago.FechaPago = model.FechaPago; pago.FechaInicio = model.FechaInicio;
         pago.FechaFin = model.FechaFin; pago.MetodoPago = model.MetodoPago;
         pago.Comprobante = CleanOptional(model.Comprobante); pago.Estado = model.Estado;
@@ -617,7 +617,23 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     private async Task LoadPaymentOptions()
     {
         ViewBag.Clientes = await dbContext.Clientes.Where(cliente => cliente.Activo).OrderBy(cliente => cliente.Apellidos).ToListAsync();
-        ViewBag.Membresias = await dbContext.Membresias.Where(membresia => membresia.Activo).OrderBy(membresia => membresia.Nombre).ToListAsync();
+        var membershipPrices = await (from pago in dbContext.Pagos.AsNoTracking()
+                                      join membresia in dbContext.Membresias.AsNoTracking() on pago.IdMembresia equals membresia.IdMembresia
+                                      where pago.Estado != "cancelado" && membresia.Activo
+                                      select new { pago.IdCliente, pago.FechaPago, membresia.Precio })
+            .ToListAsync();
+        ViewBag.MembershipPrices = membershipPrices
+            .GroupBy(item => item.IdCliente)
+            .ToDictionary(group => group.Key, group => group.OrderByDescending(item => item.FechaPago).First().Precio);
+    }
+
+    private async Task<Membresia?> GetCurrentMembershipAsync(int idCliente)
+    {
+        return await (from pago in dbContext.Pagos
+                      join membresia in dbContext.Membresias on pago.IdMembresia equals membresia.IdMembresia
+                      where pago.IdCliente == idCliente && pago.Estado != "cancelado" && membresia.Activo
+                      orderby pago.FechaPago descending
+                      select membresia).FirstOrDefaultAsync();
     }
 
     private static AdminPaymentViewModel ToPaymentViewModel(Pago pago) => new()

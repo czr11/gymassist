@@ -10,9 +10,7 @@ public class AdminPaymentViewModel
     [Display(Name = "Cliente")]
     public int IdCliente { get; set; }
 
-    [Required(ErrorMessage = "Selecciona una membresía.")]
-    [Display(Name = "Membresía")]
-    public int IdMembresia { get; set; }
+    public int? IdMembresia { get; set; }
 
     [Required(ErrorMessage = "Selecciona el tipo de pago.")]
     [RegularExpression("matricula|mensualidad", ErrorMessage = "El tipo de pago no es válido.")]

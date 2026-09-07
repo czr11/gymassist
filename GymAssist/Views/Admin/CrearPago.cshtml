@@ -1,16 +1,16 @@
 @model GymAssist.Models.AdminPaymentViewModel
 @{
     ViewData["Title"] = "Nuevo pago";
+    var membershipPrices = (IDictionary<int, decimal>)ViewBag.MembershipPrices;
 }
 <div class="admin-shell">
     <div class="admin-heading"><div><span class="auth-badge">Gestión de pagos</span><h1>Nuevo pago</h1><p>Registra una matrícula o mensualidad.</p></div><a asp-action="Pagos" class="btn btn-outline-light">Volver</a></div>
     <form asp-action="CrearPago" method="post" class="admin-form">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <div class="admin-form-grid">
-            <div><label asp-for="IdCliente" class="form-label"></label><select asp-for="IdCliente" class="form-select"><option value="">Selecciona un cliente</option>@foreach (var cliente in (IEnumerable<GymAssist.Models.Cliente>)ViewBag.Clientes){<option value="@cliente.IdCliente">@cliente.Nombres @cliente.Apellidos - @cliente.Cedula</option>}</select><span asp-validation-for="IdCliente" class="text-danger"></span></div>
-            <div><label asp-for="IdMembresia" class="form-label"></label><select asp-for="IdMembresia" class="form-select"><option value="">Selecciona una membresía</option>@foreach (var membresia in (IEnumerable<GymAssist.Models.Membresia>)ViewBag.Membresias){<option value="@membresia.IdMembresia">@membresia.Nombre - @membresia.Precio.ToString("C")</option>}</select><span asp-validation-for="IdMembresia" class="text-danger"></span></div>
+            <div><label asp-for="IdCliente" class="form-label"></label><select asp-for="IdCliente" class="form-select" id="payment-client"><option value="">Selecciona un cliente</option>@foreach (var cliente in (IEnumerable<GymAssist.Models.Cliente>)ViewBag.Clientes){<option value="@cliente.IdCliente" data-monthly-price="@(membershipPrices.TryGetValue(cliente.IdCliente, out var price) ? price.ToString(System.Globalization.CultureInfo.InvariantCulture) : "")">@cliente.Nombres @cliente.Apellidos - @cliente.Cedula</option>}</select><span asp-validation-for="IdCliente" class="text-danger"></span></div>
             <div><label asp-for="TipoPago" class="form-label"></label><select asp-for="TipoPago" class="form-select"><option value="mensualidad">Mensualidad</option><option value="matricula">Matrícula</option></select></div>
-            <div><label asp-for="Monto" class="form-label"></label><input asp-for="Monto" class="form-control" step="0.01" /><span asp-validation-for="Monto" class="text-danger"></span></div>
+            <div><label asp-for="Monto" class="form-label"></label><input asp-for="Monto" class="form-control" id="payment-amount" step="0.01" /><span class="form-text">Se sugiere el precio de la membresía del cliente, pero puedes modificarlo.</span><span asp-validation-for="Monto" class="text-danger"></span></div>
             <div><label asp-for="FechaPago" class="form-label"></label><input asp-for="FechaPago" class="form-control" type="date" /></div>
             <div><label asp-for="MetodoPago" class="form-label"></label><select asp-for="MetodoPago" class="form-select"><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option><option value="otro">Otro</option></select></div>
             <div><label asp-for="FechaInicio" class="form-label"></label><input asp-for="FechaInicio" class="form-control" type="date" /></div>
@@ -23,3 +23,9 @@
     </form>
 </div>
 @section Scripts { <partial name="_ValidationScriptsPartial" /> }
+<script>
+    document.getElementById('payment-client')?.addEventListener('change', function () {
+        const price = this.options[this.selectedIndex]?.dataset.monthlyPrice;
+        if (price) document.getElementById('payment-amount').value = price;
+    });
+</script>
