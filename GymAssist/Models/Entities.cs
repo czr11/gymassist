@@ -49,7 +49,6 @@ public class Pago
     public int? IdUsuarioRegistro { get; set; }
     public decimal Monto { get; set; }
     public string TipoPago { get; set; } = "mensualidad";
-    public string TipoPago { get; set; } = "mensualidad";
     public DateTime FechaPago { get; set; }
     public DateTime FechaInicio { get; set; }
     public DateTime FechaFin { get; set; }
