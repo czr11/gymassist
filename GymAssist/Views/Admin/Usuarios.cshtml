@@ -1,0 +1,79 @@
+@model IReadOnlyList<GymAssist.Models.Usuario>
+@{
+    ViewData["Title"] = "Gestión de usuarios";
+}
+
+<div class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <span class="auth-badge">GymAssist / Administración</span>
+            <h1>Gestión de usuarios</h1>
+            <p>Administra las cuentas que pueden acceder al panel.</p>
+        </div>
+        <div class="admin-heading__actions">
+            <a asp-action="Index" class="btn btn-outline-light">Panel</a>
+            <form asp-action="Logout" method="post">
+                <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["AdminNotice"] is not null)
+    {
+        <div class="alert alert-success">@TempData["AdminNotice"]</div>
+    }
+    @if (TempData["AdminError"] is not null)
+    {
+        <div class="alert alert-danger">@TempData["AdminError"]</div>
+    }
+
+    <div class="admin-section-toolbar">
+        <div>
+            <h2>Administradores registrados</h2>
+            <span>@Model.Count usuario(s)</span>
+        </div>
+        <a asp-action="CrearUsuario" class="btn btn-primary">Nuevo usuario</a>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Último acceso</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var usuario in Model)
+            {
+                <tr>
+                    <td>@usuario.Nombre</td>
+                    <td>@usuario.Email</td>
+                    <td><span class="admin-role">@usuario.Rol</span></td>
+                    <td>
+                        <span class="admin-status @(usuario.Activo ? "admin-status--active" : "admin-status--inactive")">
+                            @(usuario.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </td>
+                    <td>@(usuario.UltimoAcceso?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                    <td class="text-end">
+                        <div class="admin-row-actions">
+                            <a asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario" class="btn btn-sm btn-outline-light">Editar</a>
+                            @if (usuario.Activo && usuario.IdUsuario.ToString() != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                            {
+                                <form asp-action="EliminarUsuario" asp-route-id="@usuario.IdUsuario" method="post" onsubmit="return confirm('¿Desactivar este usuario?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

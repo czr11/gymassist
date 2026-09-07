@@ -274,6 +274,117 @@ body {
   color: rgba(246, 247, 251, 0.78);
 }
 
+.admin-heading__actions,
+.admin-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-section-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.admin-section-toolbar h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.admin-section-toolbar span {
+  color: rgba(246, 247, 251, 0.68);
+  font-size: 0.9rem;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(8, 14, 30, 0.72);
+}
+
+.admin-table {
+  min-width: 780px;
+  color: #f6f7fb;
+}
+
+.admin-table th {
+  color: rgba(246, 247, 251, 0.68);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.admin-table td {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-role,
+.admin-status {
+  display: inline-flex;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.admin-role {
+  background: rgba(143, 208, 255, 0.14);
+  color: #8fd0ff;
+}
+
+.admin-status--active {
+  background: rgba(99, 212, 155, 0.14);
+  color: #63d49b;
+}
+
+.admin-status--inactive {
+  background: rgba(255, 107, 122, 0.14);
+  color: #ff8b98;
+}
+
+.admin-form {
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(8, 14, 30, 0.72);
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-form .form-control,
+.admin-form .form-select {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f6f7fb;
+}
+
+.admin-form .form-select option {
+  color: #111827;
+}
+
+.admin-form-check {
+  align-self: end;
+  padding-bottom: 0.5rem;
+}
+
+.admin-form .form-text {
+  color: rgba(246, 247, 251, 0.62);
+}
+
 .admin-menu {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -319,7 +430,17 @@ body {
     flex-direction: column;
   }
 
+  .admin-heading__actions,
+  .admin-section-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .admin-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-grid {
     grid-template-columns: 1fr;
   }
 }
