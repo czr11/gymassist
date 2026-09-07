@@ -45,4 +45,8 @@ public class AdminClientViewModel
 
     [Display(Name = "Activo")]
     public bool Activo { get; set; } = true;
+
+    [Required(ErrorMessage = "Selecciona la membresía inicial.")]
+    [Display(Name = "Membresía inicial")]
+    public int? IdMembresia { get; set; }
 }

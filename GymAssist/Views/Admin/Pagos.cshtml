@@ -1,0 +1,77 @@
+@model IReadOnlyList<GymAssist.Models.Pago>
+@{
+    ViewData["Title"] = "Gestión de pagos";
+    var statusFilter = ViewData["PaymentStatusFilter"]?.ToString() ?? "todos";
+    var typeFilter = ViewData["PaymentTypeFilter"]?.ToString() ?? "todos";
+}
+
+<div class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <span class="auth-badge">GymAssist / Administración</span>
+            <h1>Gestión de pagos</h1>
+            <p>Administra matrículas y mensualidades de los clientes.</p>
+        </div>
+        <div class="admin-heading__actions">
+            <a asp-action="Index" class="btn btn-outline-light">Panel</a>
+            <form asp-action="Logout" method="post"><button type="submit" class="btn btn-outline-light">Cerrar sesión</button></form>
+        </div>
+    </div>
+
+    @if (TempData["AdminNotice"] is not null)
+    {
+        <div class="alert alert-success">@TempData["AdminNotice"]</div>
+    }
+    <div class="admin-section-toolbar">
+        <div>
+            <h2>Pagos registrados</h2>
+            <span class="admin-section-toolbar__count">@Model.Count pago(s)</span>
+        </div>
+        <div class="admin-heading__actions">
+            <form asp-action="Pagos" method="get" class="admin-filter-form">
+                <select name="estado" class="form-select admin-filter-select" onchange="this.form.submit()">
+                    <option value="todos" selected="@(statusFilter == "todos" ? "selected" : null)">Todos los estados</option>
+                    <option value="pagado" selected="@(statusFilter == "pagado" ? "selected" : null)">Pagados</option>
+                    <option value="pendiente" selected="@(statusFilter == "pendiente" ? "selected" : null)">Pendientes</option>
+                    <option value="vencido" selected="@(statusFilter == "vencido" ? "selected" : null)">Vencidos</option>
+                    <option value="cancelado" selected="@(statusFilter == "cancelado" ? "selected" : null)">Cancelados</option>
+                </select>
+                <select name="tipo" class="form-select admin-filter-select" onchange="this.form.submit()">
+                    <option value="todos" selected="@(typeFilter == "todos" ? "selected" : null)">Todos los tipos</option>
+                    <option value="matricula" selected="@(typeFilter == "matricula" ? "selected" : null)">Matrículas</option>
+                    <option value="mensualidad" selected="@(typeFilter == "mensualidad" ? "selected" : null)">Mensualidades</option>
+                </select>
+            </form>
+            <a asp-action="CrearPago" class="btn btn-primary">Nuevo pago</a>
+        </div>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="table admin-table align-middle mb-0">
+            <thead><tr><th>Cliente</th><th>Membresía</th><th>Tipo</th><th>Monto</th><th>Pago</th><th>Vigencia</th><th>Estado</th><th class="admin-table__actions-header">Acciones</th></tr></thead>
+            <tbody>
+            @foreach (var pago in Model)
+            {
+                <tr>
+                    <td>@pago.Cliente.Nombres @pago.Cliente.Apellidos</td>
+                    <td>@pago.Membresia.Nombre</td>
+                    <td><span class="admin-role">@(pago.TipoPago == "matricula" ? "Matrícula" : "Mensualidad")</span></td>
+                    <td>@pago.Monto.ToString("C")</td>
+                    <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                    <td>@pago.FechaInicio.ToString("dd/MM/yyyy") - @pago.FechaFin.ToString("dd/MM/yyyy")</td>
+                    <td><span class="admin-status @(pago.Estado == "pagado" ? "admin-status--active" : "admin-status--inactive")">@pago.Estado</span></td>
+                    <td class="admin-table__actions-cell">
+                        <div class="admin-row-actions">
+                            <a asp-action="EditarPago" asp-route-id="@pago.IdPago" class="admin-action admin-action--edit"><span class="admin-action__icon">E</span><span>Editar</span></a>
+                            @if (pago.Estado != "cancelado")
+                            {
+                                <form asp-action="EliminarPago" asp-route-id="@pago.IdPago" method="post" onsubmit="return confirm('¿Cancelar este pago?');"><button type="submit" class="admin-action admin-action--delete"><span class="admin-action__icon">X</span><span>Cancelar</span></button></form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

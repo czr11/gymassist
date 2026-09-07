@@ -48,6 +48,8 @@ public class Pago
     public int IdMembresia { get; set; }
     public int? IdUsuarioRegistro { get; set; }
     public decimal Monto { get; set; }
+    public string TipoPago { get; set; } = "mensualidad";
+    public string TipoPago { get; set; } = "mensualidad";
     public DateTime FechaPago { get; set; }
     public DateTime FechaInicio { get; set; }
     public DateTime FechaFin { get; set; }
@@ -55,6 +57,8 @@ public class Pago
     public string? Comprobante { get; set; }
     public string Estado { get; set; } = "pagado";
     public string? Observaciones { get; set; }
+    public Cliente Cliente { get; set; } = null!;
+    public Membresia Membresia { get; set; } = null!;
 }
 
 public class Checkin

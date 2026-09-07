@@ -56,6 +56,17 @@
                 </select>
                 <span asp-validation-for="Genero" class="text-danger"></span>
             </div>
+            <div>
+                <label asp-for="IdMembresia" class="form-label"></label>
+                <select asp-for="IdMembresia" class="form-select">
+                    <option value="">Selecciona una membresía</option>
+                    @foreach (var membresia in (IEnumerable<GymAssist.Models.Membresia>)ViewBag.Membresias)
+                    {
+                        <option value="@membresia.IdMembresia">@membresia.Nombre - @membresia.Precio.ToString("C")</option>
+                    }
+                </select>
+                <span asp-validation-for="IdMembresia" class="text-danger"></span>
+            </div>
             <div class="admin-form-grid__full">
                 <label asp-for="Direccion" class="form-label"></label>
                 <textarea asp-for="Direccion" class="form-control" rows="3"></textarea>

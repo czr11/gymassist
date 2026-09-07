@@ -268,6 +268,10 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     [Authorize(Roles = "admin,super_admin")]
     public IActionResult CrearCliente()
     {
+        ViewBag.Membresias = dbContext.Membresias
+            .Where(membresia => membresia.Activo)
+            .OrderBy(membresia => membresia.Nombre)
+            .ToList();
         return View(new AdminClientViewModel());
     }
 
@@ -276,6 +280,14 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     [Authorize(Roles = "admin,super_admin")]
     public async Task<IActionResult> CrearCliente(AdminClientViewModel model)
     {
+        var membresia = model.IdMembresia.HasValue
+            ? await dbContext.Membresias.FirstOrDefaultAsync(candidate => candidate.IdMembresia == model.IdMembresia && candidate.Activo)
+            : null;
+        if (membresia is null)
+        {
+            ModelState.AddModelError(nameof(model.IdMembresia), "Selecciona una membresía activa.");
+        }
+
         var cedula = model.Cedula.Trim();
         if (await dbContext.Clientes.AnyAsync(cliente => cliente.Cedula == cedula))
         {
@@ -284,10 +296,14 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         if (!ModelState.IsValid)
         {
+            ViewBag.Membresias = await dbContext.Membresias
+                .Where(candidate => candidate.Activo)
+                .OrderBy(candidate => candidate.Nombre)
+                .ToListAsync();
             return View(model);
         }
 
-        dbContext.Clientes.Add(new Cliente
+        var cliente = new Cliente
         {
             Nombres = model.Nombres.Trim(),
             Apellidos = model.Apellidos.Trim(),
@@ -300,6 +316,23 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             FechaRegistro = DateTime.UtcNow,
             Activo = model.Activo,
             IdUsuarioRegistro = GetCurrentUserId()
+        };
+        dbContext.Clientes.Add(cliente);
+        await dbContext.SaveChangesAsync();
+
+        dbContext.Pagos.Add(new Pago
+        {
+            IdCliente = cliente.IdCliente,
+            IdMembresia = membresia!.IdMembresia,
+            IdUsuarioRegistro = GetCurrentUserId(),
+            Monto = membresia.Precio,
+            TipoPago = "matricula",
+            FechaPago = DateTime.UtcNow,
+            FechaInicio = DateTime.Today,
+            FechaFin = DateTime.Today.AddDays(membresia.DuracionDias),
+            MetodoPago = "efectivo",
+            Estado = "pagado",
+            Observaciones = "Matrícula generada al registrar el cliente."
         });
         await dbContext.SaveChangesAsync();
 
@@ -402,12 +435,139 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin,super_admin")]
-    public IActionResult Pagos()
+    public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null)
     {
-        ViewData["ModuleTitle"] = "Gestión de pagos";
-        ViewData["ModuleDescription"] = "Registra y consulta los pagos de membresías.";
-        return View("Module");
+        var query = dbContext.Pagos
+            .AsNoTracking()
+            .Include(pago => pago.Cliente)
+            .Include(pago => pago.Membresia)
+            .AsQueryable();
+
+        if (estado is "pagado" or "pendiente" or "vencido" or "cancelado")
+        {
+            query = query.Where(pago => pago.Estado == estado);
+        }
+        else
+        {
+            estado = "todos";
+        }
+
+        if (tipo is "matricula" or "mensualidad")
+        {
+            query = query.Where(pago => pago.TipoPago == tipo);
+        }
+        else
+        {
+            tipo = "todos";
+        }
+
+        ViewData["PaymentStatusFilter"] = estado;
+        ViewData["PaymentTypeFilter"] = tipo;
+        return View(await query.OrderByDescending(pago => pago.FechaPago).ToListAsync());
     }
+
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> CrearPago()
+    {
+        await LoadPaymentOptions();
+        return View(new AdminPaymentViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> CrearPago(AdminPaymentViewModel model)
+    {
+        var membresia = await dbContext.Membresias.FirstOrDefaultAsync(item => item.IdMembresia == model.IdMembresia && item.Activo);
+        if (membresia is null)
+        {
+            ModelState.AddModelError(nameof(model.IdMembresia), "Selecciona una membresía activa.");
+        }
+        if (model.FechaFin < model.FechaInicio)
+        {
+            ModelState.AddModelError(nameof(model.FechaFin), "La fecha de vencimiento no puede ser anterior al inicio.");
+        }
+        if (!ModelState.IsValid)
+        {
+            await LoadPaymentOptions();
+            return View(model);
+        }
+
+        dbContext.Pagos.Add(new Pago
+        {
+            IdCliente = model.IdCliente, IdMembresia = model.IdMembresia, IdUsuarioRegistro = GetCurrentUserId(),
+            Monto = model.Monto, TipoPago = model.TipoPago, FechaPago = model.FechaPago,
+            FechaInicio = model.FechaInicio, FechaFin = model.FechaFin, MetodoPago = model.MetodoPago,
+            Comprobante = CleanOptional(model.Comprobante), Estado = model.Estado,
+            Observaciones = CleanOptional(model.Observaciones)
+        });
+        await dbContext.SaveChangesAsync();
+        TempData["AdminNotice"] = "Pago registrado correctamente.";
+        return RedirectToAction(nameof(Pagos));
+    }
+
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EditarPago(int id)
+    {
+        var pago = await dbContext.Pagos.FindAsync(id);
+        if (pago is null) return NotFound();
+        await LoadPaymentOptions();
+        return View(ToPaymentViewModel(pago));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EditarPago(AdminPaymentViewModel model)
+    {
+        var pago = await dbContext.Pagos.FindAsync(model.IdPago);
+        if (pago is null) return NotFound();
+        if (model.FechaFin < model.FechaInicio)
+        {
+            ModelState.AddModelError(nameof(model.FechaFin), "La fecha de vencimiento no puede ser anterior al inicio.");
+        }
+        if (!ModelState.IsValid)
+        {
+            await LoadPaymentOptions();
+            return View(model);
+        }
+
+        pago.IdCliente = model.IdCliente; pago.IdMembresia = model.IdMembresia; pago.Monto = model.Monto;
+        pago.TipoPago = model.TipoPago; pago.FechaPago = model.FechaPago; pago.FechaInicio = model.FechaInicio;
+        pago.FechaFin = model.FechaFin; pago.MetodoPago = model.MetodoPago;
+        pago.Comprobante = CleanOptional(model.Comprobante); pago.Estado = model.Estado;
+        pago.Observaciones = CleanOptional(model.Observaciones);
+        await dbContext.SaveChangesAsync();
+        TempData["AdminNotice"] = "Pago actualizado correctamente.";
+        return RedirectToAction(nameof(Pagos));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EliminarPago(int id)
+    {
+        var pago = await dbContext.Pagos.FindAsync(id);
+        if (pago is null) return NotFound();
+        pago.Estado = "cancelado";
+        await dbContext.SaveChangesAsync();
+        TempData["AdminNotice"] = "Pago cancelado correctamente.";
+        return RedirectToAction(nameof(Pagos));
+    }
+
+    private async Task LoadPaymentOptions()
+    {
+        ViewBag.Clientes = await dbContext.Clientes.Where(cliente => cliente.Activo).OrderBy(cliente => cliente.Apellidos).ToListAsync();
+        ViewBag.Membresias = await dbContext.Membresias.Where(membresia => membresia.Activo).OrderBy(membresia => membresia.Nombre).ToListAsync();
+    }
+
+    private static AdminPaymentViewModel ToPaymentViewModel(Pago pago) => new()
+    {
+        IdPago = pago.IdPago, IdCliente = pago.IdCliente, IdMembresia = pago.IdMembresia,
+        TipoPago = pago.TipoPago, Monto = pago.Monto, FechaPago = pago.FechaPago,
+        FechaInicio = pago.FechaInicio, FechaFin = pago.FechaFin, MetodoPago = pago.MetodoPago ?? "efectivo",
+        Comprobante = pago.Comprobante, Estado = pago.Estado, Observaciones = pago.Observaciones
+    };
 
     [HttpPost]
     [ValidateAntiForgeryToken]
