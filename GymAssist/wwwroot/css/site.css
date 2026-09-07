@@ -299,6 +299,21 @@ body {
   font-size: 0.9rem;
 }
 
+.admin-filter-form {
+  margin: 0;
+}
+
+.admin-filter-select {
+  min-width: 140px;
+  background-color: rgba(8, 20, 37, 0.86);
+  border-color: rgba(143, 208, 255, 0.34);
+  color: #e8f0f8;
+}
+
+.admin-filter-select option {
+  color: #111827;
+}
+
 .admin-section-toolbar__count {
   display: block;
   margin-top: 0.25rem;

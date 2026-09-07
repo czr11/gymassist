@@ -236,13 +236,31 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin,super_admin")]
-    public async Task<IActionResult> Clientes()
+    public async Task<IActionResult> Clientes(string estado = "todos")
     {
-        var clientes = await dbContext.Clientes
-            .AsNoTracking()
+        estado = estado.ToLowerInvariant() switch
+        {
+            "activos" => "activos",
+            "inactivos" => "inactivos",
+            _ => "todos"
+        };
+
+        var clientesQuery = dbContext.Clientes.AsNoTracking();
+        if (estado == "activos")
+        {
+            clientesQuery = clientesQuery.Where(cliente => cliente.Activo);
+        }
+        else if (estado == "inactivos")
+        {
+            clientesQuery = clientesQuery.Where(cliente => !cliente.Activo);
+        }
+
+        var clientes = await clientesQuery
             .OrderBy(cliente => cliente.Apellidos)
             .ThenBy(cliente => cliente.Nombres)
             .ToListAsync();
+
+        ViewData["ClientStatusFilter"] = estado;
 
         return View(clientes);
     }

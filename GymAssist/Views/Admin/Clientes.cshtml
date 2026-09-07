@@ -1,6 +1,7 @@
 @model IReadOnlyList<GymAssist.Models.Cliente>
 @{
     ViewData["Title"] = "Gestión de clientes";
+    var clientStatusFilter = ViewData["ClientStatusFilter"]?.ToString() ?? "todos";
 }
 
 <div class="admin-shell">
@@ -32,7 +33,38 @@
             <h2>Clientes registrados</h2>
             <span class="admin-section-toolbar__count">@Model.Count cliente(s)</span>
         </div>
-        <a asp-action="CrearCliente" class="btn btn-primary">Nuevo cliente</a>
+        <div class="admin-heading__actions">
+            <form asp-action="Clientes" method="get" class="admin-filter-form">
+                <label for="estado" class="visually-hidden">Filtrar por estado</label>
+                <select id="estado" name="estado" class="form-select admin-filter-select" onchange="this.form.submit()">
+                    @if (clientStatusFilter == "todos")
+                    {
+                        <option value="todos" selected>Todos</option>
+                    }
+                    else
+                    {
+                        <option value="todos">Todos</option>
+                    }
+                    @if (clientStatusFilter == "activos")
+                    {
+                        <option value="activos" selected>Activos</option>
+                    }
+                    else
+                    {
+                        <option value="activos">Activos</option>
+                    }
+                    @if (clientStatusFilter == "inactivos")
+                    {
+                        <option value="inactivos" selected>Inactivos</option>
+                    }
+                    else
+                    {
+                        <option value="inactivos">Inactivos</option>
+                    }
+                </select>
+            </form>
+            <a asp-action="CrearCliente" class="btn btn-primary">Nuevo cliente</a>
+        </div>
     </div>
 
     <div class="admin-table-wrap">
