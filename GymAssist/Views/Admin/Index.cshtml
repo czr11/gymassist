@@ -15,6 +15,8 @@
     </div>
 
     <nav class="admin-menu" aria-label="Módulos de administración">
+        @if (User.IsInRole("admin"))
+        {
         <a asp-action="Usuarios" class="admin-menu__item">
             <strong>Gestión de usuarios</strong>
             <span>Administradores y permisos</span>
@@ -23,13 +25,14 @@
             <strong>Gestión de clientes</strong>
             <span>Miembros y datos personales</span>
         </a>
-        <a asp-action="Pagos" class="admin-menu__item">
-            <strong>Gestión de pagos</strong>
-            <span>Membresías y transacciones</span>
-        </a>
         <a asp-action="Membresias" class="admin-menu__item">
             <strong>Gestión de membresías</strong>
             <span>Planes, precios y beneficios</span>
+        </a>
+        }
+        <a asp-action="Pagos" class="admin-menu__item">
+            <strong>Gestión de pagos</strong>
+            <span>Membresías y transacciones</span>
         </a>
     </nav>
 

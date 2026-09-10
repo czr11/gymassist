@@ -38,7 +38,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         {
             usuario = await dbContext.Usuarios
                 .FirstOrDefaultAsync(candidate => candidate.Activo &&
-                    (candidate.Rol == "admin" || candidate.Rol == "super_admin") &&
+                    (candidate.Rol == "admin" || candidate.Rol == "pagos") &&
                     candidate.Email.ToLower() == email);
         }
         catch (Exception exception) when (IsDatabaseException(exception))
@@ -96,13 +96,13 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return false;
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public IActionResult Index()
     {
         return View();
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Membresias(string estado = "activos")
     {
         estado = estado.ToLowerInvariant() switch
@@ -126,7 +126,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return View(await membresiasQuery.OrderBy(membresia => membresia.Nombre).ToListAsync());
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public IActionResult CrearMembresia()
     {
         return View(new AdminMembershipViewModel());
@@ -134,7 +134,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> CrearMembresia(AdminMembershipViewModel model)
     {
         var nombre = model.Nombre.Trim();
@@ -165,7 +165,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return RedirectToAction(nameof(Membresias));
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EditarMembresia(int id)
     {
         var membresia = await dbContext.Membresias.FindAsync(id);
@@ -190,7 +190,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EditarMembresia(AdminMembershipViewModel model)
     {
         var membresia = await dbContext.Membresias.FindAsync(model.IdMembresia);
@@ -227,7 +227,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EliminarMembresia(int id)
     {
         var membresia = await dbContext.Membresias.FindAsync(id);
@@ -242,7 +242,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return RedirectToAction(nameof(Membresias));
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Usuarios()
     {
         var usuarios = await dbContext.Usuarios
@@ -253,7 +253,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return View(usuarios);
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public IActionResult CrearUsuario()
     {
         return View(new AdminUserViewModel());
@@ -261,7 +261,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> CrearUsuario(AdminUserViewModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Password))
@@ -295,7 +295,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return RedirectToAction(nameof(Usuarios));
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EditarUsuario(int id)
     {
         var usuario = await dbContext.Usuarios.FindAsync(id);
@@ -316,7 +316,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EditarUsuario(AdminUserViewModel model)
     {
         var usuario = await dbContext.Usuarios.FindAsync(model.IdUsuario);
@@ -353,7 +353,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EliminarUsuario(int id)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -375,7 +375,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return RedirectToAction(nameof(Usuarios));
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Clientes(string estado = "todos")
     {
         estado = estado.ToLowerInvariant() switch
@@ -405,7 +405,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return View(clientes);
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public IActionResult CrearCliente()
     {
         ViewBag.Membresias = dbContext.Membresias
@@ -417,7 +417,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> CrearCliente(AdminClientViewModel model)
     {
         var membresia = model.IdMembresia.HasValue
@@ -486,7 +486,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return RedirectToAction(nameof(Clientes));
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EditarCliente(int id)
     {
         var cliente = await dbContext.Clientes.FindAsync(id);
@@ -522,7 +522,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EditarCliente(AdminClientViewModel model)
     {
         var cliente = await dbContext.Clientes.FindAsync(model.IdCliente);
@@ -595,7 +595,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> EliminarCliente(int id)
     {
         var cliente = await dbContext.Clientes.FindAsync(id);
@@ -625,7 +625,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return string.IsNullOrWhiteSpace(genero) ? null : genero[0];
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null, string? buscar = null)
     {
         var query = dbContext.PagosGestion.AsNoTracking();
@@ -684,7 +684,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return View(pagos);
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public async Task<IActionResult> CrearPago()
     {
         await LoadPaymentOptions();
@@ -693,7 +693,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public async Task<IActionResult> CrearPago(AdminPaymentViewModel model)
     {
         var membresia = await GetCurrentMembershipAsync(model.IdCliente);
@@ -724,7 +724,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         return RedirectToAction(nameof(Pagos));
     }
 
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public async Task<IActionResult> EditarPago(int id)
     {
         var pago = await dbContext.Pagos.FindAsync(id);
@@ -735,7 +735,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public async Task<IActionResult> EditarPago(AdminPaymentViewModel model)
     {
         var pago = await dbContext.Pagos.FindAsync(model.IdPago);
@@ -762,7 +762,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin,super_admin")]
+    [Authorize(Roles = "admin,pagos")]
     public async Task<IActionResult> EliminarPago(int id)
     {
         var pago = await dbContext.Pagos.FindAsync(id);

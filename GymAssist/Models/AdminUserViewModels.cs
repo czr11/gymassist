@@ -23,7 +23,7 @@ public class AdminUserViewModel
     public string? Password { get; set; }
 
     [Required(ErrorMessage = "Selecciona un rol.")]
-    [RegularExpression("admin|super_admin", ErrorMessage = "El rol seleccionado no es válido.")]
+    [RegularExpression("admin|pagos", ErrorMessage = "El rol seleccionado no es válido.")]
     [Display(Name = "Rol")]
     public string Rol { get; set; } = "admin";
 
