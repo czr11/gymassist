@@ -376,8 +376,10 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Clientes(string estado = "todos")
+    public async Task<IActionResult> Clientes(string estado = "todos", int pagina = 1)
     {
+        const int pageSize = 10;
+        pagina = Math.Max(pagina, 1);
         estado = estado.ToLowerInvariant() switch
         {
             "activos" => "activos",
@@ -395,14 +397,26 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             clientesQuery = clientesQuery.Where(cliente => !cliente.Activo);
         }
 
+        var totalClientes = await clientesQuery.CountAsync();
+        var totalPaginas = Math.Max((int)Math.Ceiling(totalClientes / (double)pageSize), 1);
+        pagina = Math.Min(pagina, totalPaginas);
         var clientes = await clientesQuery
             .OrderBy(cliente => cliente.Apellidos)
             .ThenBy(cliente => cliente.Nombres)
+            .ThenBy(cliente => cliente.IdCliente)
+            .Skip((pagina - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
         ViewData["ClientStatusFilter"] = estado;
 
-        return View(clientes);
+        return View(new AdminClientPageViewModel
+        {
+            Clientes = clientes,
+            PaginaActual = pagina,
+            TotalPaginas = totalPaginas,
+            TotalClientes = totalClientes
+        });
     }
 
     [Authorize(Roles = "admin")]

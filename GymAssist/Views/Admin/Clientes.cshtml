@@ -1,4 +1,4 @@
-@model IReadOnlyList<GymAssist.Models.Cliente>
+@model GymAssist.Models.AdminClientPageViewModel
 @{
     ViewData["Title"] = "Gestión de clientes";
     var clientStatusFilter = ViewData["ClientStatusFilter"]?.ToString() ?? "todos";
@@ -49,7 +49,7 @@
     <div class="admin-section-toolbar">
         <div>
             <h2>Clientes registrados</h2>
-            <span class="admin-section-toolbar__count">@Model.Count cliente(s)</span>
+            <span class="admin-section-toolbar__count">@Model.TotalClientes cliente(s) · Página @Model.PaginaActual de @Model.TotalPaginas</span>
         </div>
         <div class="admin-heading__actions">
             <form asp-action="Clientes" method="get" class="admin-filter-form">
@@ -99,7 +99,7 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach (var cliente in Model)
+            @foreach (var cliente in Model.Clientes)
             {
                 <tr>
                     <td>@cliente.IdCliente</td>
@@ -153,4 +153,41 @@
             </tbody>
         </table>
     </div>
+
+    @if (Model.TotalPaginas > 1)
+    {
+        <nav class="admin-pagination" aria-label="Paginación de clientes">
+            @if (Model.TienePaginaAnterior)
+            {
+                <a asp-action="Clientes" asp-route-pagina="@(Model.PaginaActual - 1)" asp-route-estado="@clientStatusFilter" class="admin-pagination__link">Anterior</a>
+            }
+            else
+            {
+                <span class="admin-pagination__link admin-pagination__link--disabled">Anterior</span>
+            }
+
+            <div class="admin-pagination__pages">
+                @for (var pagina = 1; pagina <= Model.TotalPaginas; pagina++)
+                {
+                    if (pagina == Model.PaginaActual)
+                    {
+                        <span class="admin-pagination__link admin-pagination__link--active">@pagina</span>
+                    }
+                    else
+                    {
+                        <a asp-action="Clientes" asp-route-pagina="@pagina" asp-route-estado="@clientStatusFilter" class="admin-pagination__link">@pagina</a>
+                    }
+                }
+            </div>
+
+            @if (Model.TienePaginaSiguiente)
+            {
+                <a asp-action="Clientes" asp-route-pagina="@(Model.PaginaActual + 1)" asp-route-estado="@clientStatusFilter" class="admin-pagination__link">Siguiente</a>
+            }
+            else
+            {
+                <span class="admin-pagination__link admin-pagination__link--disabled">Siguiente</span>
+            }
+        </nav>
+    }
 </div>
