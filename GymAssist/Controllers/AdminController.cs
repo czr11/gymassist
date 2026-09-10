@@ -460,23 +460,29 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         dbContext.Clientes.Add(cliente);
         await dbContext.SaveChangesAsync();
 
+        var fechaInicio = DateTime.Today;
+        var fechaFin = fechaInicio.AddDays(membresia!.DuracionDias - 1);
         dbContext.Pagos.Add(new Pago
         {
             IdCliente = cliente.IdCliente,
-            IdMembresia = membresia!.IdMembresia,
+            IdMembresia = membresia.IdMembresia,
             IdUsuarioRegistro = GetCurrentUserId(),
             Monto = membresia.Precio,
             TipoPago = "matricula",
             FechaPago = DateTime.UtcNow,
-            FechaInicio = DateTime.Today,
-            FechaFin = DateTime.Today.AddDays(membresia.DuracionDias),
+            FechaInicio = fechaInicio,
+            FechaFin = fechaFin,
             MetodoPago = "efectivo",
             Estado = "pagado",
             Observaciones = "Matrícula generada al registrar el cliente."
         });
         await dbContext.SaveChangesAsync();
 
-        TempData["AdminNotice"] = "Cliente creado correctamente.";
+        TempData["CreatedClientId"] = cliente.IdCliente.ToString();
+        TempData["CreatedClientName"] = $"{cliente.Nombres} {cliente.Apellidos}";
+        TempData["CreatedClientCedula"] = cliente.Cedula;
+        TempData["CreatedClientMembership"] = membresia.Nombre;
+        TempData["CreatedClientValidity"] = $"{fechaInicio:dd/MM/yyyy} - {fechaFin:dd/MM/yyyy}";
         return RedirectToAction(nameof(Clientes));
     }
 

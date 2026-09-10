@@ -33,6 +33,59 @@ body {
   color: red;
 }
 
+.admin-summary {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(143, 208, 255, 0.35);
+  border-radius: 14px;
+  background: rgba(37, 140, 251, 0.12);
+}
+
+.admin-summary__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-summary__header h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.25rem;
+}
+
+.admin-summary__id {
+  color: #8fd0ff;
+  white-space: nowrap;
+}
+
+.admin-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-summary__grid span,
+.admin-summary__grid strong {
+  display: block;
+}
+
+.admin-summary__grid span {
+  color: rgba(246, 247, 251, 0.65);
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .admin-summary__header {
+    flex-direction: column;
+  }
+
+  .admin-summary__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .admin-link {
   display: inline-flex;
   align-items: center;

@@ -23,6 +23,24 @@
     {
         <div class="alert alert-success">@TempData["AdminNotice"]</div>
     }
+    @if (TempData["CreatedClientId"] is not null)
+    {
+        <div class="admin-summary">
+            <div class="admin-summary__header">
+                <div>
+                    <span class="hero-badge">Cliente registrado</span>
+                    <h2>Resumen del registro</h2>
+                </div>
+                <strong class="admin-summary__id">Client ID: @TempData["CreatedClientId"]</strong>
+            </div>
+            <div class="admin-summary__grid">
+                <div><span>Nombre</span><strong>@TempData["CreatedClientName"]</strong></div>
+                <div><span>Cédula</span><strong>@TempData["CreatedClientCedula"]</strong></div>
+                <div><span>Membresía</span><strong>@TempData["CreatedClientMembership"]</strong></div>
+                <div><span>Vigencia inicial</span><strong>@TempData["CreatedClientValidity"]</strong></div>
+            </div>
+        </div>
+    }
     @if (TempData["AdminError"] is not null)
     {
         <div class="alert alert-danger">@TempData["AdminError"]</div>
@@ -71,6 +89,7 @@
         <table class="table admin-table align-middle mb-0">
             <thead>
                 <tr>
+                    <th>Client ID</th>
                     <th>Cliente</th>
                     <th>Cédula</th>
                     <th>Contacto</th>
@@ -83,6 +102,7 @@
             @foreach (var cliente in Model)
             {
                 <tr>
+                    <td>@cliente.IdCliente</td>
                     <td>
                         <span class="admin-date">@cliente.Nombres @cliente.Apellidos</span>
                         @if (cliente.FechaNacimiento.HasValue)
