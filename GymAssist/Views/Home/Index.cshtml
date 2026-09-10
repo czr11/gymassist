@@ -13,23 +13,44 @@
                 </select>
                 <span asp-validation-for="GymName" class="text-danger"></span>
             </div>
-            <a asp-controller="Admin" asp-action="Login" class="admin-link">Admin</a>
+            <a asp-controller="Admin" asp-action="Login" class="admin-link">Staff login <span aria-hidden="true">↗</span></a>
         </div>
     </div>
 
     <section class="hero-card">
         <div class="hero-copy">
-            <span class="hero-badge">Self-service • Acceso rápido</span>
-            <h1>Check-in</h1>
-            <p>Registra tu ingreso en segundos con tu correo, ID o teléfono y consulta el estado de tu membresía al instante.</p>
+            <div class="hero-kicker"><span class="hero-kicker__line"></span> Alphamma.sv / San Salvador</div>
+            <span class="hero-badge">Kickboxing · Fuerza · Disciplina</span>
+            <h1>Entrena como si cada round <em>contara.</em></h1>
+            <p class="hero-lede">Un espacio para quienes vienen a moverse con intención. Confirma tu acceso y entra directo a tu próxima sesión.</p>
 
             <div class="hero-actions">
                 <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#checkinModal">
-                    Iniciar check-in
+                    Confirmar mi acceso <span aria-hidden="true">→</span>
                 </button>
+                <span class="hero-note"><span class="hero-note__dot"></span> Recepción abierta · 05:30 — 22:00</span>
             </div>
         </div>
 
+        <div class="hero-visual" aria-label="Ilustración decorativa de un ring de kickboxing">
+            <div class="hero-visual__label">ROUND <strong>01</strong></div>
+            <div class="ring-graphic">
+                <span class="ring-graphic__rope ring-graphic__rope--one"></span>
+                <span class="ring-graphic__rope ring-graphic__rope--two"></span>
+                <span class="ring-graphic__rope ring-graphic__rope--three"></span>
+                <span class="ring-graphic__corner ring-graphic__corner--left"></span>
+                <span class="ring-graphic__corner ring-graphic__corner--right"></span>
+                <span class="ring-graphic__glove ring-graphic__glove--left">A</span>
+                <span class="ring-graphic__glove ring-graphic__glove--right">F</span>
+            </div>
+            <div class="hero-visual__caption"><span>01</span><span>02</span><span>03</span><strong>READY</strong></div>
+        </div>
+    </section>
+
+    <section class="home-strip" aria-label="Información del gimnasio">
+        <div><span class="home-strip__number">01</span><strong>Check-in sin filas</strong><small>Consulta tu acceso en segundos</small></div>
+        <div><span class="home-strip__number">02</span><strong>Clases con propósito</strong><small>Kickboxing para todos los niveles</small></div>
+        <div><span class="home-strip__number">03</span><strong>Tu sesión empieza aquí</strong><small>Trae tu energía. Nosotros ponemos el ring.</small></div>
     </section>
 </div>
 
