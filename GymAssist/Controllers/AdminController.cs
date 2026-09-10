@@ -482,10 +482,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     [Authorize(Roles = "admin,super_admin")]
     public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null, string? buscar = null)
     {
-        var query = from pago in dbContext.Pagos.AsNoTracking()
-                    join cliente in dbContext.Clientes.AsNoTracking() on pago.IdCliente equals cliente.IdCliente
-                    join membresia in dbContext.Membresias.AsNoTracking() on pago.IdMembresia equals membresia.IdMembresia
-                    select new { pago, cliente, membresia };
+        var query = dbContext.PagosGestion.AsNoTracking();
 
         buscar = buscar?.Trim();
         if (!string.IsNullOrWhiteSpace(buscar))
@@ -493,21 +490,17 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
             var pattern = $"%{buscar}%";
             var codigoCliente = int.TryParse(buscar, out var parsedCode) ? parsedCode : (int?)null;
             query = query.Where(item =>
-                (codigoCliente.HasValue && item.cliente.IdCliente == codigoCliente.Value) ||
-                EF.Functions.ILike(item.cliente.Nombres + " " + item.cliente.Apellidos, pattern) ||
-                EF.Functions.ILike(item.cliente.Email ?? string.Empty, pattern) ||
-                EF.Functions.ILike(item.cliente.Cedula, pattern) ||
-                EF.Functions.ILike(item.cliente.Telefono ?? string.Empty, pattern));
+                (codigoCliente.HasValue && item.IdCliente == codigoCliente.Value) ||
+                EF.Functions.ILike(item.Cliente, pattern));
         }
 
         if (estado == "vencido")
         {
-            query = query.Where(item => item.pago.Estado != "cancelado" && item.pago.FechaFin < DateTime.UtcNow.Date);
+            query = query.Where(item => item.EstadoVigencia == "vencida");
         }
         else if (estado is "pagado" or "pendiente" or "cancelado")
         {
-            query = query.Where(item => item.pago.Estado == estado &&
-                (estado == "cancelado" || item.pago.FechaFin >= DateTime.UtcNow.Date));
+            query = query.Where(item => item.EstadoPago == estado);
         }
         else
         {
@@ -516,7 +509,7 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
 
         if (tipo is "matricula" or "mensualidad")
         {
-            query = query.Where(item => item.pago.TipoPago == tipo);
+            query = query.Where(item => item.TipoPago == tipo);
         }
         else
         {
@@ -527,20 +520,19 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         ViewData["PaymentTypeFilter"] = tipo;
         ViewData["PaymentSearch"] = buscar ?? string.Empty;
         var pagos = await query
-            .OrderByDescending(item => item.pago.FechaPago)
+            .OrderByDescending(item => item.FechaPago)
             .Select(item => new AdminPaymentListViewModel
             {
-                IdPago = item.pago.IdPago,
-                Cliente = item.cliente.Nombres + " " + item.cliente.Apellidos,
-                Membresia = item.membresia.Nombre,
-                TipoPago = item.pago.TipoPago,
-                Monto = item.pago.Monto,
-                FechaPago = item.pago.FechaPago,
-                FechaInicio = item.pago.FechaInicio,
-                FechaFin = item.pago.FechaFin,
-                Estado = item.pago.Estado != "cancelado" && item.pago.FechaFin < DateTime.UtcNow.Date
-                    ? "vencido"
-                    : item.pago.Estado
+                IdPago = item.IdPago,
+                Cliente = item.Cliente,
+                Membresia = item.Membresia,
+                TipoPago = item.TipoPago,
+                Monto = item.Monto,
+                FechaPago = item.FechaPago,
+                FechaInicio = item.FechaInicio,
+                FechaFin = item.FechaFin,
+                EstadoPago = item.EstadoPago,
+                EstadoVigencia = item.EstadoVigencia
             })
             .ToListAsync();
         return View(pagos);

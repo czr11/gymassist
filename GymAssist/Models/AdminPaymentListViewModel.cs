@@ -10,5 +10,6 @@ public class AdminPaymentListViewModel
     public DateTime FechaPago { get; set; }
     public DateTime FechaInicio { get; set; }
     public DateTime FechaFin { get; set; }
-    public string Estado { get; set; } = string.Empty;
+    public string EstadoPago { get; set; } = string.Empty;
+    public string EstadoVigencia { get; set; } = string.Empty;
 }

@@ -40,27 +40,52 @@ public class HomeController(GymAssistDbContext dbContext, IOptions<CheckInOption
             return View("Index", model);
         }
 
+        var hoy = DateTime.Today;
         var pago = await dbContext.Pagos
             .AsNoTracking()
-            .Where(pago => pago.IdCliente == cliente.IdCliente)
+            .Where(pago => pago.IdCliente == cliente.IdCliente &&
+                pago.Estado == "pagado" &&
+                pago.FechaInicio <= hoy &&
+                pago.FechaFin >= hoy)
             .OrderByDescending(pago => pago.FechaFin)
             .FirstOrDefaultAsync();
 
         if (pago is null)
         {
-            SetResult(model, "Sin suscripción", $"Hola, {cliente.Nombres}.", "No tienes una suscripción registrada.", "danger");
+            var pagoPendiente = await dbContext.Pagos
+                .AsNoTracking()
+                .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado == "pendiente")
+                .OrderByDescending(candidate => candidate.FechaFin)
+                .FirstOrDefaultAsync();
+
+            if (pagoPendiente is not null)
+            {
+                SetResult(model, "Pago pendiente", $"Hola, {cliente.Nombres}.", "Tienes un pago pendiente. Acércate a recepción para regularizarlo.", "warning");
+                return View("Index", model);
+            }
+
+            var ultimoPago = await dbContext.Pagos
+                .AsNoTracking()
+                .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado != "cancelado")
+                .OrderByDescending(candidate => candidate.FechaFin)
+                .FirstOrDefaultAsync();
+
+            if (ultimoPago is null)
+            {
+                SetResult(model, "Sin suscripción", $"Hola, {cliente.Nombres}.", "No tienes una suscripción registrada.", "danger");
+            }
+            else if (ultimoPago.FechaInicio > hoy)
+            {
+                SetResult(model, "Suscripción programada", $"Hola, {cliente.Nombres}.", $"Tu suscripción inicia el {ultimoPago.FechaInicio:dd/MM/yyyy}.", "warning");
+            }
+            else
+            {
+                SetResult(model, "Suscripción vencida", $"Hola, {cliente.Nombres}.", $"Tu suscripción venció el {ultimoPago.FechaFin:dd/MM/yyyy}.", "danger");
+            }
             return View("Index", model);
         }
 
-        if (pago.Estado == "pendiente")
-        {
-            SetResult(model, "Pago pendiente", $"Hola, {cliente.Nombres}.", "Tienes un pago pendiente. Acércate a recepción para regularizarlo.", "warning");
-        }
-        else if (pago.FechaFin < DateTime.Today || pago.Estado is "vencido" or "cancelado")
-        {
-            SetResult(model, "Suscripción vencida", $"Hola, {cliente.Nombres}.", $"Tu suscripción venció el {pago.FechaFin:dd/MM/yyyy}.", "danger");
-        }
-        else if (pago.FechaFin <= DateTime.Today.AddDays(checkInOptions.Value.DiasProximoVencimiento))
+        if (pago.FechaFin <= hoy.AddDays(checkInOptions.Value.DiasProximoVencimiento))
         {
             SetResult(model, "Suscripción próxima a vencer", $"Hola, {cliente.Nombres}.", $"Tu suscripción vence el {pago.FechaFin:dd/MM/yyyy}.", "warning");
         }

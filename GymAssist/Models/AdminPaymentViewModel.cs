@@ -43,7 +43,7 @@ public class AdminPaymentViewModel
     public string? Comprobante { get; set; }
 
     [Required(ErrorMessage = "Selecciona el estado.")]
-    [RegularExpression("pagado|pendiente|vencido|cancelado", ErrorMessage = "El estado no es válido.")]
+    [RegularExpression("pagado|pendiente|cancelado", ErrorMessage = "El estado no es válido.")]
     public string Estado { get; set; } = "pagado";
 
     [StringLength(1000, ErrorMessage = "Las observaciones no pueden superar los 1000 caracteres.")]
