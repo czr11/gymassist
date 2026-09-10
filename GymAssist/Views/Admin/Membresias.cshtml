@@ -1,0 +1,88 @@
+@model IReadOnlyList<GymAssist.Models.Membresia>
+@{
+    ViewData["Title"] = "Gestión de membresías";
+    var statusFilter = ViewData["MembershipStatusFilter"]?.ToString() ?? "activas";
+}
+
+<div class="admin-shell">
+    <div class="admin-heading">
+        <div>
+            <span class="auth-badge">GymAssist / Administración</span>
+            <h1>Gestión de membresías</h1>
+            <p>Administra los planes, precios y beneficios disponibles.</p>
+        </div>
+        <div class="admin-heading__actions">
+            <a asp-action="Index" class="btn btn-outline-light">Panel</a>
+            <form asp-action="Logout" method="post"><button type="submit" class="btn btn-outline-light">Cerrar sesión</button></form>
+        </div>
+    </div>
+
+    @if (TempData["AdminNotice"] is not null)
+    {
+        <div class="alert alert-success">@TempData["AdminNotice"]</div>
+    }
+
+    <div class="admin-section-toolbar">
+        <div>
+            <h2>Membresías registradas</h2>
+            <span class="admin-section-toolbar__count">@Model.Count membresía(s)</span>
+        </div>
+        <div class="admin-heading__actions">
+            <form asp-action="Membresias" method="get" class="admin-filter-form">
+                <label for="estado" class="visually-hidden">Filtrar por estado</label>
+                <select id="estado" name="estado" class="form-select admin-filter-select" onchange="this.form.submit()">
+                    <option value="activas" selected="@(statusFilter == "activas" ? "selected" : null)">Activas</option>
+                    <option value="inactivas" selected="@(statusFilter == "inactivas" ? "selected" : null)">Inactivas</option>
+                    <option value="todos" selected="@(statusFilter == "todos" ? "selected" : null)">Todas</option>
+                </select>
+            </form>
+            <a asp-action="CrearMembresia" class="btn btn-primary">Nueva membresía</a>
+        </div>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="table admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Membresía</th>
+                    <th>Precio</th>
+                    <th>Duración</th>
+                    <th>Beneficios</th>
+                    <th>Estado</th>
+                    <th class="admin-table__actions-header">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var membresia in Model)
+            {
+                <tr>
+                    <td>
+                        <span class="admin-date">@membresia.Nombre</span>
+                        @if (!string.IsNullOrWhiteSpace(membresia.Descripcion))
+                        {
+                            <span class="admin-time">@membresia.Descripcion</span>
+                        }
+                    </td>
+                    <td>@membresia.Precio.ToString("C")</td>
+                    <td>@membresia.DuracionDias día(s)</td>
+                    <td>
+                        <span class="admin-time">
+                            @(membresia.AccesoSalas ? "Salas" : "")@(membresia.AccesoEntrenador ? " · Entrenador" : "")@(membresia.AccesoSpa ? " · Spa" : "")
+                        </span>
+                    </td>
+                    <td><span class="admin-status @(membresia.Activo ? "admin-status--active" : "admin-status--inactive")">@(membresia.Activo ? "Activa" : "Inactiva")</span></td>
+                    <td class="admin-table__actions-cell">
+                        <div class="admin-row-actions">
+                            <a asp-action="EditarMembresia" asp-route-id="@membresia.IdMembresia" class="admin-action admin-action--edit"><span class="admin-action__icon">E</span><span>Editar</span></a>
+                            @if (membresia.Activo)
+                            {
+                                <form asp-action="EliminarMembresia" asp-route-id="@membresia.IdMembresia" method="post" onsubmit="return confirm('¿Desactivar esta membresía? Se conservará el historial de pagos.');"><button type="submit" class="admin-action admin-action--delete"><span class="admin-action__icon">X</span><span>Desactivar</span></button></form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

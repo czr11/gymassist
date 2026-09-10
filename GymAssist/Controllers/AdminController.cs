@@ -103,6 +103,146 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> Membresias(string estado = "activos")
+    {
+        estado = estado.ToLowerInvariant() switch
+        {
+            "todos" => "todos",
+            "inactivas" => "inactivas",
+            _ => "activas"
+        };
+
+        var membresiasQuery = dbContext.Membresias.AsNoTracking();
+        if (estado == "activas")
+        {
+            membresiasQuery = membresiasQuery.Where(membresia => membresia.Activo);
+        }
+        else if (estado == "inactivas")
+        {
+            membresiasQuery = membresiasQuery.Where(membresia => !membresia.Activo);
+        }
+
+        ViewData["MembershipStatusFilter"] = estado;
+        return View(await membresiasQuery.OrderBy(membresia => membresia.Nombre).ToListAsync());
+    }
+
+    [Authorize(Roles = "admin,super_admin")]
+    public IActionResult CrearMembresia()
+    {
+        return View(new AdminMembershipViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> CrearMembresia(AdminMembershipViewModel model)
+    {
+        var nombre = model.Nombre.Trim();
+        if (await dbContext.Membresias.AnyAsync(membresia => membresia.Nombre.ToLower() == nombre.ToLower()))
+        {
+            ModelState.AddModelError(nameof(model.Nombre), "Ya existe una membresía con ese nombre.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        dbContext.Membresias.Add(new Membresia
+        {
+            Nombre = nombre,
+            Descripcion = CleanOptional(model.Descripcion),
+            Precio = model.Precio,
+            DuracionDias = model.DuracionDias,
+            AccesoSalas = model.AccesoSalas,
+            AccesoEntrenador = model.AccesoEntrenador,
+            AccesoSpa = model.AccesoSpa,
+            Activo = model.Activo
+        });
+        await dbContext.SaveChangesAsync();
+
+        TempData["AdminNotice"] = "Membresía creada correctamente.";
+        return RedirectToAction(nameof(Membresias));
+    }
+
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EditarMembresia(int id)
+    {
+        var membresia = await dbContext.Membresias.FindAsync(id);
+        if (membresia is null)
+        {
+            return NotFound();
+        }
+
+        return View(new AdminMembershipViewModel
+        {
+            IdMembresia = membresia.IdMembresia,
+            Nombre = membresia.Nombre,
+            Descripcion = membresia.Descripcion,
+            Precio = membresia.Precio,
+            DuracionDias = membresia.DuracionDias,
+            AccesoSalas = membresia.AccesoSalas,
+            AccesoEntrenador = membresia.AccesoEntrenador,
+            AccesoSpa = membresia.AccesoSpa,
+            Activo = membresia.Activo
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EditarMembresia(AdminMembershipViewModel model)
+    {
+        var membresia = await dbContext.Membresias.FindAsync(model.IdMembresia);
+        if (membresia is null)
+        {
+            return NotFound();
+        }
+
+        var nombre = model.Nombre.Trim();
+        if (await dbContext.Membresias.AnyAsync(candidate =>
+                candidate.IdMembresia != model.IdMembresia && candidate.Nombre.ToLower() == nombre.ToLower()))
+        {
+            ModelState.AddModelError(nameof(model.Nombre), "Ya existe una membresía con ese nombre.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        membresia.Nombre = nombre;
+        membresia.Descripcion = CleanOptional(model.Descripcion);
+        membresia.Precio = model.Precio;
+        membresia.DuracionDias = model.DuracionDias;
+        membresia.AccesoSalas = model.AccesoSalas;
+        membresia.AccesoEntrenador = model.AccesoEntrenador;
+        membresia.AccesoSpa = model.AccesoSpa;
+        membresia.Activo = model.Activo;
+        await dbContext.SaveChangesAsync();
+
+        TempData["AdminNotice"] = "Membresía actualizada correctamente.";
+        return RedirectToAction(nameof(Membresias));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin,super_admin")]
+    public async Task<IActionResult> EliminarMembresia(int id)
+    {
+        var membresia = await dbContext.Membresias.FindAsync(id);
+        if (membresia is null)
+        {
+            return NotFound();
+        }
+
+        membresia.Activo = false;
+        await dbContext.SaveChangesAsync();
+        TempData["AdminNotice"] = "Membresía desactivada correctamente.";
+        return RedirectToAction(nameof(Membresias));
+    }
+
+    [Authorize(Roles = "admin,super_admin")]
     public async Task<IActionResult> Usuarios()
     {
         var usuarios = await dbContext.Usuarios
