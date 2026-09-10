@@ -1014,6 +1014,11 @@ body {
   color: #63d49b;
 }
 
+.admin-status--history {
+  background: rgba(244, 180, 0, 0.16);
+  color: #f4c44f;
+}
+
 .admin-status--inactive {
   background: rgba(255, 107, 122, 0.14);
   color: #ff8b98;

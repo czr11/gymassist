@@ -63,7 +63,7 @@
                     <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
                     <td>@pago.FechaInicio.ToString("dd/MM/yyyy") - @pago.FechaFin.ToString("dd/MM/yyyy")</td>
                     <td><span class="admin-status @(pago.EstadoPago == "pagado" ? "admin-status--active" : "admin-status--inactive")">@pago.EstadoPago</span></td>
-                    <td><span class="admin-status @(pago.EstadoVigencia == "activa" ? "admin-status--active" : "admin-status--inactive")">@(pago.EstadoVigencia == "historial" ? "Historial" : pago.EstadoVigencia.Replace("_", " "))</span></td>
+                    <td><span class="admin-status @(pago.EstadoVigencia == "activa" ? "admin-status--active" : pago.EstadoVigencia == "historial" ? "admin-status--history" : "admin-status--inactive")">@(pago.EstadoVigencia == "historial" ? "Historial" : pago.EstadoVigencia.Replace("_", " "))</span></td>
                     <td class="admin-table__actions-cell">
                         <div class="admin-row-actions">
                             <a asp-action="EditarPago" asp-route-id="@pago.IdPago" class="admin-action admin-action--edit"><span class="admin-action__icon">E</span><span>Editar</span></a>
