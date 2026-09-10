@@ -1,4 +1,4 @@
-@model IReadOnlyList<GymAssist.Models.AdminPaymentListViewModel>
+@model GymAssist.Models.AdminPaymentPageViewModel
 @{
     ViewData["Title"] = "Gestión de pagos";
     var statusFilter = ViewData["PaymentStatusFilter"]?.ToString() ?? "todos";
@@ -26,7 +26,7 @@
     <div class="admin-section-toolbar">
         <div>
             <h2>Pagos registrados</h2>
-            <span class="admin-section-toolbar__count">@Model.Count pago(s)</span>
+            <span class="admin-section-toolbar__count">@Model.TotalPagos pago(s) · Página @Model.PaginaActual de @Model.TotalPaginas</span>
         </div>
         <div class="admin-heading__actions">
             <form asp-action="Pagos" method="get" class="admin-filter-form">
@@ -53,7 +53,7 @@
         <table class="table admin-table align-middle mb-0">
             <thead><tr><th>Cliente</th><th>Membresía</th><th>Tipo</th><th>Monto</th><th>Pago</th><th>Vigencia</th><th>Estado del pago</th><th>Vigencia del pago</th><th class="admin-table__actions-header">Acciones</th></tr></thead>
             <tbody>
-            @foreach (var pago in Model)
+            @foreach (var pago in Model.Pagos)
             {
                 <tr>
                     <td>@pago.Cliente</td>
@@ -78,4 +78,41 @@
             </tbody>
         </table>
     </div>
+
+    @if (Model.TotalPaginas > 1)
+    {
+        <nav class="admin-pagination" aria-label="Paginación de pagos">
+            @if (Model.TienePaginaAnterior)
+            {
+                <a asp-action="Pagos" asp-route-pagina="@(Model.PaginaActual - 1)" asp-route-estado="@statusFilter" asp-route-tipo="@typeFilter" asp-route-buscar="@paymentSearch" class="admin-pagination__link">Anterior</a>
+            }
+            else
+            {
+                <span class="admin-pagination__link admin-pagination__link--disabled">Anterior</span>
+            }
+
+            <div class="admin-pagination__pages">
+                @for (var pagina = 1; pagina <= Model.TotalPaginas; pagina++)
+                {
+                    if (pagina == Model.PaginaActual)
+                    {
+                        <span class="admin-pagination__link admin-pagination__link--active">@pagina</span>
+                    }
+                    else
+                    {
+                        <a asp-action="Pagos" asp-route-pagina="@pagina" asp-route-estado="@statusFilter" asp-route-tipo="@typeFilter" asp-route-buscar="@paymentSearch" class="admin-pagination__link">@pagina</a>
+                    }
+                }
+            </div>
+
+            @if (Model.TienePaginaSiguiente)
+            {
+                <a asp-action="Pagos" asp-route-pagina="@(Model.PaginaActual + 1)" asp-route-estado="@statusFilter" asp-route-tipo="@typeFilter" asp-route-buscar="@paymentSearch" class="admin-pagination__link">Siguiente</a>
+            }
+            else
+            {
+                <span class="admin-pagination__link admin-pagination__link--disabled">Siguiente</span>
+            }
+        </nav>
+    }
 </div>

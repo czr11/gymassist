@@ -626,8 +626,10 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
     }
 
     [Authorize(Roles = "admin,pagos")]
-    public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null, string? buscar = null)
+    public async Task<IActionResult> Pagos(string? estado = null, string? tipo = null, string? buscar = null, int pagina = 1)
     {
+        const int pageSize = 10;
+        pagina = Math.Max(pagina, 1);
         var query = dbContext.PagosGestion.AsNoTracking();
 
         buscar = buscar?.Trim();
@@ -665,8 +667,14 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
         ViewData["PaymentStatusFilter"] = estado;
         ViewData["PaymentTypeFilter"] = tipo;
         ViewData["PaymentSearch"] = buscar ?? string.Empty;
+        var totalPagos = await query.CountAsync();
+        var totalPaginas = Math.Max((int)Math.Ceiling(totalPagos / (double)pageSize), 1);
+        pagina = Math.Min(pagina, totalPaginas);
         var pagos = await query
             .OrderByDescending(item => item.FechaPago)
+            .ThenByDescending(item => item.IdPago)
+            .Skip((pagina - 1) * pageSize)
+            .Take(pageSize)
             .Select(item => new AdminPaymentListViewModel
             {
                 IdPago = item.IdPago,
@@ -681,7 +689,13 @@ public class AdminController(GymAssistDbContext dbContext, AesPasswordService pa
                 EstadoVigencia = item.EstadoVigencia
             })
             .ToListAsync();
-        return View(pagos);
+        return View(new AdminPaymentPageViewModel
+        {
+            Pagos = pagos,
+            PaginaActual = pagina,
+            TotalPaginas = totalPaginas,
+            TotalPagos = totalPagos
+        });
     }
 
     [Authorize(Roles = "admin,pagos")]
