@@ -1,8 +1,14 @@
 ﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
-document.getElementById('payment-client')?.addEventListener('change', function () {
-	const price = this.options[this.selectedIndex]?.dataset.monthlyPrice;
+document.getElementById('payment-client-search')?.addEventListener('input', function () {
+	const search = this;
+	const selectedOption = Array.from(document.getElementById('payment-client-options').options)
+		.find(option => option.value === search.value);
+	const clientId = document.getElementById('payment-client-id');
+	clientId.value = selectedOption?.dataset.clientId ?? '';
+
+	const price = selectedOption?.dataset.monthlyPrice;
 	if (price) document.getElementById('payment-amount').value = price;
 });
 

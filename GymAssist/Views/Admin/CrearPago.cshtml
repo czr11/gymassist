@@ -2,13 +2,28 @@
 @{
     ViewData["Title"] = "Nuevo pago";
     var membershipPrices = (IDictionary<int, decimal>)ViewBag.MembershipPrices;
+    var clientes = (IEnumerable<GymAssist.Models.Cliente>)ViewBag.Clientes;
+    var clienteSeleccionado = clientes.FirstOrDefault(cliente => cliente.IdCliente == Model.IdCliente);
 }
 <div class="admin-shell">
     <div class="admin-heading"><div><span class="auth-badge">Gestión de pagos</span><h1>Nuevo pago</h1><p>Registra una matrícula o mensualidad.</p></div><a asp-action="Pagos" class="btn btn-outline-light">Volver</a></div>
     <form asp-action="CrearPago" method="post" class="admin-form">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <div class="admin-form-grid">
-            <div><label asp-for="IdCliente" class="form-label"></label><select asp-for="IdCliente" class="form-select" id="payment-client"><option value="">Selecciona un cliente</option>@foreach (var cliente in (IEnumerable<GymAssist.Models.Cliente>)ViewBag.Clientes){<option value="@cliente.IdCliente" data-monthly-price="@(membershipPrices.TryGetValue(cliente.IdCliente, out var price) ? price.ToString(System.Globalization.CultureInfo.InvariantCulture) : "")">@cliente.Nombres @cliente.Apellidos - @cliente.Cedula</option>}</select><span asp-validation-for="IdCliente" class="text-danger"></span></div>
+            <div>
+                <label for="payment-client-search" class="form-label">Cliente</label>
+                <input type="search" id="payment-client-search" class="form-control" list="payment-client-options" value="@(clienteSeleccionado is null ? "" : $"{clienteSeleccionado.Nombres} {clienteSeleccionado.Apellidos} | ID: {clienteSeleccionado.IdCliente} | Cédula: {clienteSeleccionado.Cedula}")" placeholder="Busca por nombre, ID o cédula" autocomplete="off" />
+                <input asp-for="IdCliente" type="hidden" id="payment-client-id" />
+                <datalist id="payment-client-options">
+                @foreach (var cliente in clientes)
+                {
+                    var clientLabel = $"{cliente.Nombres} {cliente.Apellidos} | ID: {cliente.IdCliente} | Cédula: {cliente.Cedula}";
+                    var clientPrice = membershipPrices.TryGetValue(cliente.IdCliente, out var price) ? price.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+                    <option value="@clientLabel" data-client-id="@cliente.IdCliente" data-monthly-price="@clientPrice"></option>
+                }
+                </datalist>
+                <span asp-validation-for="IdCliente" class="text-danger"></span>
+            </div>
             <div><label asp-for="TipoPago" class="form-label"></label><select asp-for="TipoPago" class="form-select"><option value="mensualidad">Mensualidad</option><option value="matricula">Matrícula</option></select></div>
             <div><label asp-for="Monto" class="form-label"></label><input asp-for="Monto" class="form-control" id="payment-amount" step="0.01" /><span class="form-text">Se sugiere el precio de la membresía del cliente, pero puedes modificarlo.</span><span asp-validation-for="Monto" class="text-danger"></span></div>
             <div><label asp-for="FechaPago" class="form-label"></label><input asp-for="FechaPago" class="form-control" type="date" /></div>
