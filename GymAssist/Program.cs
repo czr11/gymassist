@@ -24,6 +24,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Admin/Login";
         options.AccessDeniedPath = "/Admin/Login";
         options.Cookie.Name = "GymAssist.Admin";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
     });
@@ -52,12 +55,21 @@ app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // Only use HSTS if we're not behind a proxy
-    if (!app.Environment.IsDevelopment() && !app.Configuration.GetValue<bool>("Kestrel:DisableHsts"))
-    {
-        app.UseHsts();
-    }
+    app.UseHsts();
+    app.UseHttpsRedirection();
 }
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'";
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+
+    await next();
+});
 
 app.UseStaticFiles();
 app.UseRouting();

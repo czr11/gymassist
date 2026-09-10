@@ -24,6 +24,15 @@ body {
   min-height: 100vh;
 }
 
+.result-modal-visible {
+  display: block;
+  background: rgba(0, 0, 0, .5);
+}
+
+.database-error {
+  color: red;
+}
+
 .admin-link {
   display: inline-flex;
   align-items: center;

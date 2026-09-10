@@ -23,9 +23,3 @@
     </form>
 </div>
 @section Scripts { <partial name="_ValidationScriptsPartial" /> }
-<script>
-    document.getElementById('payment-client')?.addEventListener('change', function () {
-        const price = this.options[this.selectedIndex]?.dataset.monthlyPrice;
-        if (price) document.getElementById('payment-amount').value = price;
-    });
-</script>
