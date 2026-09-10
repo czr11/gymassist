@@ -10,19 +10,24 @@ document.getElementById('resultModalClose')?.addEventListener('click', function 
 	document.getElementById('resultModal')?.remove();
 });
 
-let pendingLogoutForm;
-const logoutModal = document.getElementById('logoutConfirmModal');
-const confirmLogoutButton = document.getElementById('confirmLogoutButton');
+let pendingActionForm;
+const actionModal = document.getElementById('actionConfirmModal');
+const actionTitle = document.getElementById('actionConfirmTitle');
+const actionMessage = document.getElementById('actionConfirmMessage');
+const confirmActionButton = document.getElementById('confirmActionButton');
 
-document.querySelectorAll('.logout-form').forEach(function (form) {
+document.querySelectorAll('.confirm-action-form').forEach(function (form) {
 	form.addEventListener('submit', function (event) {
 		event.preventDefault();
-		pendingLogoutForm = form;
-		bootstrap.Modal.getOrCreateInstance(logoutModal).show();
+		pendingActionForm = form;
+		actionTitle.textContent = form.dataset.confirmTitle;
+		actionMessage.textContent = form.dataset.confirmMessage;
+		confirmActionButton.textContent = form.dataset.confirmButton;
+		bootstrap.Modal.getOrCreateInstance(actionModal).show();
 	});
 });
 
-confirmLogoutButton?.addEventListener('click', function () {
-	if (!pendingLogoutForm) return;
-	HTMLFormElement.prototype.submit.call(pendingLogoutForm);
+confirmActionButton?.addEventListener('click', function () {
+	if (!pendingActionForm) return;
+	HTMLFormElement.prototype.submit.call(pendingActionForm);
 });

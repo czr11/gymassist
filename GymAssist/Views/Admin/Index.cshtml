@@ -9,7 +9,7 @@
             <h1>Panel de administración</h1>
             <p>Gestiona la operación del gimnasio desde un solo lugar.</p>
         </div>
-        <form asp-action="Logout" method="post" class="logout-form">
+        <form asp-action="Logout" method="post" class="confirm-action-form" data-confirm-title="¿Estás seguro de que quieres cerrar sesión?" data-confirm-message="Tu sesión administrativa se cerrará en este dispositivo." data-confirm-button="Cerrar sesión">
             <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
         </form>
     </div>

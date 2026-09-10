@@ -13,7 +13,7 @@
         </div>
         <div class="admin-heading__actions">
             <a asp-action="Index" class="btn btn-outline-light">Panel</a>
-            <form asp-action="Logout" method="post" class="logout-form"><button type="submit" class="btn btn-outline-light">Cerrar sesión</button></form>
+            <form asp-action="Logout" method="post" class="confirm-action-form" data-confirm-title="¿Estás seguro de que quieres cerrar sesión?" data-confirm-message="Tu sesión administrativa se cerrará en este dispositivo." data-confirm-button="Cerrar sesión"><button type="submit" class="btn btn-outline-light">Cerrar sesión</button></form>
         </div>
     </div>
 
@@ -76,7 +76,7 @@
                             <a asp-action="EditarMembresia" asp-route-id="@membresia.IdMembresia" class="admin-action admin-action--edit"><span class="admin-action__icon">E</span><span>Editar</span></a>
                             @if (membresia.Activo)
                             {
-                                <form asp-action="EliminarMembresia" asp-route-id="@membresia.IdMembresia" method="post" onsubmit="return confirm('¿Desactivar esta membresía? Se conservará el historial de pagos.');"><button type="submit" class="admin-action admin-action--delete"><span class="admin-action__icon">X</span><span>Desactivar</span></button></form>
+                                <form asp-action="EliminarMembresia" asp-route-id="@membresia.IdMembresia" method="post" class="confirm-action-form" data-confirm-title="¿Desactivar esta membresía?" data-confirm-message="Se conservará el historial de pagos, pero no estará disponible para nuevos registros." data-confirm-button="Desactivar membresía"><button type="submit" class="admin-action admin-action--delete"><span class="admin-action__icon">X</span><span>Desactivar</span></button></form>
                             }
                         </div>
                     </td>

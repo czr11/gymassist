@@ -13,7 +13,7 @@
         </div>
         <div class="admin-heading__actions">
             <a asp-action="Index" class="btn btn-outline-light">Panel</a>
-            <form asp-action="Logout" method="post" class="logout-form">
+            <form asp-action="Logout" method="post" class="confirm-action-form" data-confirm-title="¿Estás seguro de que quieres cerrar sesión?" data-confirm-message="Tu sesión administrativa se cerrará en este dispositivo." data-confirm-button="Cerrar sesión">
                 <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
             </form>
         </div>
@@ -119,7 +119,7 @@
                             </a>
                             @if (cliente.Activo)
                             {
-                                <form asp-action="EliminarCliente" asp-route-id="@cliente.IdCliente" method="post" onsubmit="return confirm('¿Eliminar este cliente? La cuenta se desactivará y conservará su historial.');">
+                                <form asp-action="EliminarCliente" asp-route-id="@cliente.IdCliente" method="post" class="confirm-action-form" data-confirm-title="¿Eliminar este cliente?" data-confirm-message="La cuenta se desactivará y conservará su historial." data-confirm-button="Eliminar cliente">
                                     <button type="submit" class="admin-action admin-action--delete">
                                         <span class="admin-action__icon">X</span>
                                         <span>Eliminar</span>
