@@ -110,6 +110,7 @@ public class HomeController(GymAssistDbContext dbContext, IOptions<CheckInOption
 
     private static void SetResult(CheckInViewModel model, string title, string message, string? detail, string level)
     {
+        model.Identificador = string.Empty;
         model.ResultTitle = title;
         model.ResultMessage = message;
         model.ResultDetail = detail;
