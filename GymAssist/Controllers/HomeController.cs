@@ -24,6 +24,8 @@ public class HomeController(GymAssistDbContext dbContext, IOptions<CheckInOption
         }
 
         var identificador = model.Identificador.Trim();
+        ModelState.Remove(nameof(model.Identificador));
+        model.Identificador = string.Empty;
         var idCliente = int.TryParse(identificador, out var parsedId) ? parsedId : (int?)null;
         var email = identificador.ToLowerInvariant();
         var cliente = await dbContext.Clientes
