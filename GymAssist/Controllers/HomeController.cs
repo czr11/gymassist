@@ -4,10 +4,14 @@ using GymAssist.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace GymAssist.Controllers;
 
-public class HomeController(GymAssistDbContext dbContext, IOptions<CheckInOptions> checkInOptions) : Controller
+public class HomeController(
+    GymAssistDbContext dbContext,
+    IOptions<CheckInOptions> checkInOptions,
+    ILogger<HomeController> logger) : Controller
 {
     public IActionResult Index()
     {
@@ -28,75 +32,84 @@ public class HomeController(GymAssistDbContext dbContext, IOptions<CheckInOption
         model.Identificador = string.Empty;
         var idCliente = int.TryParse(identificador, out var parsedId) ? parsedId : (int?)null;
         var email = identificador.ToLowerInvariant();
-        var cliente = await dbContext.Clientes
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cliente => cliente.Activo &&
-                (cliente.IdCliente == idCliente ||
-                 cliente.Cedula == identificador ||
-                 (cliente.Email != null && cliente.Email.ToLower() == email) ||
-                 cliente.Telefono == identificador));
-
-        if (cliente is null)
+        try
         {
-            SetResult(model, "Usuario no encontrado", "No encontramos un cliente activo con esos datos.", null, "danger");
-            return View("Index", model);
-        }
-
-        var hoy = DateTime.Today;
-        var pago = await dbContext.Pagos
-            .AsNoTracking()
-            .Where(pago => pago.IdCliente == cliente.IdCliente &&
-                pago.Estado == "pagado" &&
-                pago.FechaInicio <= hoy &&
-                pago.FechaFin >= hoy)
-            .OrderByDescending(pago => pago.FechaFin)
-            .FirstOrDefaultAsync();
-
-        if (pago is null)
-        {
-            var pagoPendiente = await dbContext.Pagos
+            var cliente = await dbContext.Clientes
                 .AsNoTracking()
-                .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado == "pendiente")
-                .OrderByDescending(candidate => candidate.FechaFin)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cliente => cliente.Activo &&
+                    (cliente.IdCliente == idCliente ||
+                     cliente.Cedula == identificador ||
+                     (cliente.Email != null && cliente.Email.ToLower() == email) ||
+                     cliente.Telefono == identificador));
 
-            if (pagoPendiente is not null)
+            if (cliente is null)
             {
-                SetResult(model, "Pago pendiente", $"Hola, {cliente.Nombres}.", "Tienes un pago pendiente. Acércate a recepción para regularizarlo.", "warning");
+                SetResult(model, "Usuario no encontrado", "No encontramos un cliente activo con esos datos.", null, "danger");
                 return View("Index", model);
             }
 
-            var ultimoPago = await dbContext.Pagos
+            var hoy = DateTime.Today;
+            var pago = await dbContext.Pagos
                 .AsNoTracking()
-                .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado != "cancelado")
-                .OrderByDescending(candidate => candidate.FechaFin)
+                .Where(pago => pago.IdCliente == cliente.IdCliente &&
+                    pago.Estado == "pagado" &&
+                    pago.FechaInicio <= hoy &&
+                    pago.FechaFin >= hoy)
+                .OrderByDescending(pago => pago.FechaFin)
                 .FirstOrDefaultAsync();
 
-            if (ultimoPago is null)
+            if (pago is null)
             {
-                SetResult(model, "Sin suscripción", $"Hola, {cliente.Nombres}.", "No tienes una suscripción registrada.", "danger");
+                var pagoPendiente = await dbContext.Pagos
+                    .AsNoTracking()
+                    .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado == "pendiente")
+                    .OrderByDescending(candidate => candidate.FechaFin)
+                    .FirstOrDefaultAsync();
+
+                if (pagoPendiente is not null)
+                {
+                    SetResult(model, "Pago pendiente", $"Hola, {cliente.Nombres}.", "Tienes un pago pendiente. Acércate a recepción para regularizarlo.", "warning");
+                    return View("Index", model);
+                }
+
+                var ultimoPago = await dbContext.Pagos
+                    .AsNoTracking()
+                    .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado != "cancelado")
+                    .OrderByDescending(candidate => candidate.FechaFin)
+                    .FirstOrDefaultAsync();
+
+                if (ultimoPago is null)
+                {
+                    SetResult(model, "Sin suscripción", $"Hola, {cliente.Nombres}.", "No tienes una suscripción registrada.", "danger");
+                }
+                else if (ultimoPago.FechaInicio > hoy)
+                {
+                    SetResult(model, "Suscripción programada", $"Hola, {cliente.Nombres}.", $"Tu suscripción inicia el {ultimoPago.FechaInicio:dd/MM/yyyy}.", "warning");
+                }
+                else
+                {
+                    SetResult(model, "Suscripción vencida", $"Hola, {cliente.Nombres}.", $"Tu suscripción venció el {ultimoPago.FechaFin:dd/MM/yyyy}.", "danger");
+                }
+                return View("Index", model);
             }
-            else if (ultimoPago.FechaInicio > hoy)
+
+            if (pago.FechaFin <= hoy.AddDays(checkInOptions.Value.DiasProximoVencimiento))
             {
-                SetResult(model, "Suscripción programada", $"Hola, {cliente.Nombres}.", $"Tu suscripción inicia el {ultimoPago.FechaInicio:dd/MM/yyyy}.", "warning");
+                SetResult(model, "Suscripción próxima a vencer", $"Hola, {cliente.Nombres}.", $"Tu suscripción vence el {pago.FechaFin:dd/MM/yyyy}.", "warning");
             }
             else
             {
-                SetResult(model, "Suscripción vencida", $"Hola, {cliente.Nombres}.", $"Tu suscripción venció el {ultimoPago.FechaFin:dd/MM/yyyy}.", "danger");
+                SetResult(model, $"Bienvenido a {model.GymName}", $"Hola, {cliente.Nombres}.", "Tu suscripción está al día. Puedes ingresar.", "success");
             }
+
             return View("Index", model);
         }
-
-        if (pago.FechaFin <= hoy.AddDays(checkInOptions.Value.DiasProximoVencimiento))
+        catch (Exception exception) when (IsDatabaseException(exception))
         {
-            SetResult(model, "Suscripción próxima a vencer", $"Hola, {cliente.Nombres}.", $"Tu suscripción vence el {pago.FechaFin:dd/MM/yyyy}.", "warning");
+            logger.LogError(exception, "No fue posible consultar el estado del check-in.");
+            SetResult(model, "No pudimos verificar tu acceso", "La conexión con el sistema no está disponible en este momento.", "Intenta nuevamente en unos minutos o acércate a recepción.", "danger");
+            return View("Index", model);
         }
-        else
-        {
-            SetResult(model, $"Bienvenido a {model.GymName}", $"Hola, {cliente.Nombres}.", "Tu suscripción está al día. Puedes ingresar.", "success");
-        }
-
-        return View("Index", model);
     }
 
     public IActionResult Privacy()
@@ -117,6 +130,19 @@ public class HomeController(GymAssistDbContext dbContext, IOptions<CheckInOption
         model.ResultMessage = message;
         model.ResultDetail = detail;
         model.ResultLevel = level;
+    }
+
+    private static bool IsDatabaseException(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is NpgsqlException)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
