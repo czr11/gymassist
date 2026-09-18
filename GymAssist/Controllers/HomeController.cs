@@ -36,13 +36,24 @@ public class HomeController(
         var databaseOperation = "buscar el cliente";
         try
         {
-            var cliente = await dbContext.Clientes
-                .AsNoTracking()
-                .FirstOrDefaultAsync(cliente => cliente.Activo &&
-                    (cliente.IdCliente == idCliente ||
+            var clientesQuery = dbContext.Clientes.AsNoTracking();
+            if (parsedId > 0)
+            {
+                clientesQuery = clientesQuery.Where(cliente => cliente.Activo &&
+                    (cliente.IdCliente == parsedId ||
                      cliente.Cedula == identificador ||
                      (cliente.Email != null && cliente.Email.ToLower() == email) ||
                      cliente.Telefono == identificador));
+            }
+            else
+            {
+                clientesQuery = clientesQuery.Where(cliente => cliente.Activo &&
+                    (cliente.Cedula == identificador ||
+                     (cliente.Email != null && cliente.Email.ToLower() == email) ||
+                     cliente.Telefono == identificador));
+            }
+
+            var cliente = await clientesQuery.FirstOrDefaultAsync();
 
             if (cliente is null)
             {
