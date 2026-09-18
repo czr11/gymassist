@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -64,7 +65,18 @@ app.UseForwardedHeaders();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler(errorApp => errorApp.Run(context =>
+    {
+        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(
+            exceptionFeature?.Error,
+            "Excepción no controlada. Ruta: {RequestPath}. RequestId: {RequestId}",
+            context.Request.Path,
+            context.TraceIdentifier);
+        context.Response.Redirect("/Home/Error");
+        return Task.CompletedTask;
+    }));
     app.UseHsts();
     app.UseHttpsRedirection();
 }

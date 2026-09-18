@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Data.Common;
 using GymAssist.Data;
 using GymAssist.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,7 @@ public class HomeController(
         model.Identificador = string.Empty;
         var idCliente = int.TryParse(identificador, out var parsedId) ? parsedId : (int?)null;
         var email = identificador.ToLowerInvariant();
+        var databaseOperation = "buscar el cliente";
         try
         {
             var cliente = await dbContext.Clientes
@@ -48,6 +50,7 @@ public class HomeController(
                 return View("Index", model);
             }
 
+            databaseOperation = "consultar el pago vigente";
             var hoy = DateTime.Today;
             var pago = await dbContext.Pagos
                 .AsNoTracking()
@@ -60,6 +63,7 @@ public class HomeController(
 
             if (pago is null)
             {
+                databaseOperation = "consultar pagos pendientes";
                 var pagoPendiente = await dbContext.Pagos
                     .AsNoTracking()
                     .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado == "pendiente")
@@ -72,6 +76,7 @@ public class HomeController(
                     return View("Index", model);
                 }
 
+                databaseOperation = "consultar el último pago";
                 var ultimoPago = await dbContext.Pagos
                     .AsNoTracking()
                     .Where(candidate => candidate.IdCliente == cliente.IdCliente && candidate.Estado != "cancelado")
@@ -106,8 +111,13 @@ public class HomeController(
         }
         catch (Exception exception) when (IsDatabaseException(exception))
         {
-            logger.LogError(exception, "No fue posible consultar el estado del check-in.");
-            SetResult(model, "No pudimos verificar tu acceso", "La conexión con el sistema no está disponible en este momento.", "Intenta nuevamente en unos minutos o acércate a recepción.", "danger");
+            var requestId = HttpContext.TraceIdentifier;
+            logger.LogError(
+                exception,
+                "Error de base de datos durante el check-in. Operación: {DatabaseOperation}. RequestId: {RequestId}",
+                databaseOperation,
+                requestId);
+            SetResult(model, "No pudimos verificar tu acceso", "La conexión con el sistema no está disponible en este momento.", $"Código de diagnóstico: {requestId}. Compártelo con soporte.", "danger");
             return View("Index", model);
         }
     }
@@ -136,7 +146,7 @@ public class HomeController(
     {
         for (var current = exception; current is not null; current = current.InnerException)
         {
-            if (current is NpgsqlException)
+            if (current is DbException or NpgsqlException)
             {
                 return true;
             }
