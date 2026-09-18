@@ -109,15 +109,16 @@ public class HomeController(
 
             return View("Index", model);
         }
-        catch (Exception exception) when (IsDatabaseException(exception))
+        catch (Exception exception)
         {
             var requestId = HttpContext.TraceIdentifier;
             logger.LogError(
                 exception,
-                "Error de base de datos durante el check-in. Operación: {DatabaseOperation}. RequestId: {RequestId}",
+                "Error durante el check-in. Operación: {DatabaseOperation}. RequestId: {RequestId}",
                 databaseOperation,
                 requestId);
-            SetResult(model, "No pudimos verificar tu acceso", "La conexión con el sistema no está disponible en este momento.", $"Código de diagnóstico: {requestId}. Compártelo con soporte.", "danger");
+            var errorType = exception.GetBaseException().GetType().Name;
+            SetResult(model, "No pudimos verificar tu acceso", "Ocurrió un error al consultar tu información.", $"Tipo: {errorType}. Código de diagnóstico: {requestId}.", "danger");
             return View("Index", model);
         }
     }

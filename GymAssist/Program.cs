@@ -71,7 +71,8 @@ if (!app.Environment.IsDevelopment())
         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
         logger.LogError(
             exceptionFeature?.Error,
-            "Excepción no controlada. Ruta: {RequestPath}. RequestId: {RequestId}",
+            "Excepción no controlada. Tipo: {ExceptionType}. Ruta: {RequestPath}. RequestId: {RequestId}",
+            exceptionFeature?.Error?.GetBaseException().GetType().FullName,
             context.Request.Path,
             context.TraceIdentifier);
 
