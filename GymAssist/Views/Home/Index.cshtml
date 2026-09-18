@@ -102,3 +102,14 @@
         </div>
     </div>
 }
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('#checkinModal .input-validation-error')) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('checkinModal')).show();
+            }
+        });
+    </script>
+}
