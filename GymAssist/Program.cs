@@ -17,7 +17,17 @@ builder.Services.AddDataProtection()
     .SetApplicationName("GymAssist");
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
+        (value, field) => $"Ingresa un valor válido para {field}.");
+    options.ModelBindingMessageProvider.SetValueIsInvalidAccessor(
+        field => $"Ingresa un valor válido para {field}.");
+    options.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(
+        field => $"Ingresa un número válido para {field}.");
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+        field => $"Ingresa {field}.");
+});
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {

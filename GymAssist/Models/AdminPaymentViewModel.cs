@@ -7,6 +7,7 @@ public class AdminPaymentViewModel
     public int IdPago { get; set; }
 
     [Required(ErrorMessage = "Selecciona un cliente.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Selecciona un cliente válido.")]
     [Display(Name = "Cliente")]
     public int IdCliente { get; set; }
 
@@ -21,14 +22,17 @@ public class AdminPaymentViewModel
     [Display(Name = "Monto")]
     public decimal Monto { get; set; }
 
+    [Required(ErrorMessage = "Ingresa la fecha de pago.")]
     [DataType(DataType.Date)]
     [Display(Name = "Fecha de pago")]
     public DateTime FechaPago { get; set; } = DateTime.Today;
 
+    [Required(ErrorMessage = "Ingresa la fecha de inicio.")]
     [DataType(DataType.Date)]
     [Display(Name = "Fecha de inicio")]
     public DateTime FechaInicio { get; set; } = DateTime.Today;
 
+    [Required(ErrorMessage = "Ingresa la fecha de vencimiento.")]
     [DataType(DataType.Date)]
     [Display(Name = "Fecha de vencimiento")]
     public DateTime FechaFin { get; set; } = DateTime.Today.AddMonths(1);

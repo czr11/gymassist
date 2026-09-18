@@ -1062,6 +1062,28 @@ body {
   color: rgba(246, 247, 251, 0.62);
 }
 
+.admin-form .field-validation-error,
+.admin-form .validation-summary-errors {
+  display: block;
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(255, 173, 181, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 173, 181, 0.1);
+  color: #ffc1c8 !important;
+  font-size: 0.85rem;
+}
+
+.admin-form .validation-summary-errors {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.admin-form .input-validation-error {
+  border-color: #ffadb5;
+  box-shadow: 0 0 0 0.2rem rgba(255, 173, 181, 0.12);
+}
+
 .admin-menu {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
