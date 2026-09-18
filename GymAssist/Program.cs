@@ -74,8 +74,20 @@ if (!app.Environment.IsDevelopment())
             "Excepción no controlada. Ruta: {RequestPath}. RequestId: {RequestId}",
             context.Request.Path,
             context.TraceIdentifier);
-        context.Response.Redirect("/Home/Error");
-        return Task.CompletedTask;
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "text/html; charset=utf-8";
+        return context.Response.WriteAsync($"""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head><meta charset="utf-8"><title>Error - GymAssist</title></head>
+            <body>
+                <h1>No pudimos completar la solicitud</h1>
+                <p>Ocurrió un error inesperado. Intenta nuevamente en unos minutos.</p>
+                <p>Código de diagnóstico: <strong>{System.Net.WebUtility.HtmlEncode(context.TraceIdentifier)}</strong></p>
+            </body>
+            </html>
+            """);
     }));
     app.UseHsts();
     app.UseHttpsRedirection();
